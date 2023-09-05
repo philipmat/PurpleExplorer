@@ -70,16 +70,16 @@
 
             <Grid MinHeight="600" VerticalAlignment="Top" ShowGridLines="True">
                 <Grid.RowDefinitions>
-                    <RowDefinition MinHeight="30" />
-                    <RowDefinition MinHeight="30" />
-                    <RowDefinition MinHeight="30" />
-                    <RowDefinition MinHeight="30" />
-                    <RowDefinition MinHeight="30" />
-                    <RowDefinition MinHeight="30" />
-                    <RowDefinition MinHeight="30" />
-                    <RowDefinition MinHeight="30" />
-                    <RowDefinition MinHeight="30" />
-                    <RowDefinition MinHeight="30" />
+                    <RowDefinition Height="20" />
+                    <RowDefinition Height="20" />
+                    <RowDefinition Height="*" />
+                    <RowDefinition Height="20" />
+                    <RowDefinition Height="20" />
+                    <RowDefinition Height="20" />
+                    <RowDefinition Height="20" />
+                    <RowDefinition Height="20" />
+                    <RowDefinition Height="20" />
+                    <RowDefinition Height="20" />
                 </Grid.RowDefinitions>
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="150" />
