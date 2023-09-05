@@ -93,7 +93,9 @@
                 <TextBlock Grid.Row="1" Grid.Column="1" Text="{Binding Message.ContentType}" Classes="right" />
 
                 <TextBlock Text="Content" Grid.Row="2" Classes="left" Grid.Column="0" />
-                <TextBox Grid.Row="2" Grid.Column="1" IsReadOnly="True" Name="ContentTextBlock" Text="{Binding Message.Content}" />
+                <TextBox Grid.Row="2" Grid.Column="1" IsReadOnly="True" Name="ContentTextBlock" 
+                  TextWrapping="Wrap"
+                  Text="{Binding Message.Content}" />
 
                 <TextBlock Grid.Row="3" Grid.Column="0" Classes="left" Text="Sequence Number" />
                 <TextBlock Grid.Row="3" Grid.Column="1" Classes="right" Text="{Binding Message.SequenceNumber}" />
