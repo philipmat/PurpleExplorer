@@ -94,7 +94,7 @@
 
                 <TextBlock Text="Content" Grid.Row="2" Classes="left" Grid.Column="0" />
                 <TextBox Grid.Row="2" Grid.Column="1" IsReadOnly="True" Name="ContentTextBlock" 
-                  TextWrapping="Wrap"
+                  TextWrapping="Wrap" AcceptsReturn="True"
                   Text="{Binding Message.Content}" />
 
                 <TextBlock Grid.Row="3" Grid.Column="0" Classes="left" Text="Sequence Number" />
