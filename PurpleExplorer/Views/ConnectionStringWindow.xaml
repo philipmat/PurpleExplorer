@@ -47,7 +47,8 @@
         <ListBox Grid.Row="4" Name="lsbSavedConnectionString" Margin="5,0,5,0"
                  Items="{Binding Path=SavedConnectionStrings, Mode=TwoWay}"
                  Width="600" Height="300" VerticalAlignment="Top"
-                 SelectionChanged="lsbConnectionStringSelectionChanged" HorizontalAlignment="Left">
+                 SelectionChanged="lsbConnectionStringSelectionChanged" HorizontalAlignment="Left"
+                 DoubleTapped="btnSendClick">
 
             <ListBox.ItemTemplate>
                 <DataTemplate>
