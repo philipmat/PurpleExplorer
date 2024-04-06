@@ -182,12 +182,12 @@
                             <DataGrid.Columns>
                                 <DataGridTextColumn Header="Sequence Number" Binding="{Binding SequenceNumber}" />
                                 <DataGridTextColumn Header="Message Id" Binding="{Binding MessageId}" />
-                                <DataGridTextColumn Header="Content" Binding="{Binding Content}" />
-                                <DataGridTextColumn Header="Label" Binding="{Binding Label}"  Width="500" MaxWidth="1000"/>
+                                <DataGridTextColumn Header="Dead-letter reason" Binding="{Binding DeadLetterReason}" />
+                                <DataGridTextColumn Header="Label" Binding="{Binding Label}"  MaxWidth="1000"/>
                                 <DataGridTextColumn Header="Size" Binding="{Binding Size}" />
                                 <DataGridTextColumn Header="Delivery Count" Binding="{Binding DeliveryCount}" />
-                                <DataGridTextColumn Header="Dead-letter reason" Binding="{Binding DeadLetterReason}" />
                                 <DataGridTextColumn Header="Enqueue time (UTC)" Binding="{Binding EnqueueTimeUtc}" />
+                                <DataGridTextColumn Header="Content" Binding="{Binding Content}" />
                             </DataGrid.Columns>
                         </DataGrid>
                     </TabItem>
