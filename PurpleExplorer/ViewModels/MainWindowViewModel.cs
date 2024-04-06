@@ -235,8 +235,11 @@ public class MainWindowViewModel : ViewModelBase
             await _topicHelper.GetMessagesBySubscription(CurrentSubscription.Topic.ServiceBus.ConnectionString,
                 CurrentSubscription.Topic.Name,
                 CurrentSubscription.Name);
-        CurrentSubscription.AddMessages(messages);
-        Messages.AddRange(messages);
+        if (messages is { Count: > 0 })
+        {
+            CurrentSubscription?.AddMessages(messages);
+            Messages.AddRange(messages);
+        }
     }
 
     public async Task FetchSubscriptionDlqMessages()
@@ -247,12 +250,15 @@ public class MainWindowViewModel : ViewModelBase
         }
             
         DlqMessages.Clear();
-        CurrentSubscription.ClearDlqMessages();
+        CurrentSubscription?.ClearDlqMessages();
         var dlqMessages =
             await _topicHelper.GetDlqMessages(CurrentSubscription.Topic.ServiceBus.ConnectionString,
                 CurrentSubscription.Topic.Name, CurrentSubscription.Name);
-        CurrentSubscription.AddDlqMessages(dlqMessages);
-        DlqMessages.AddRange(dlqMessages);
+        if (dlqMessages is { Count: > 0 })
+        {
+            CurrentSubscription?.AddDlqMessages(dlqMessages);
+            DlqMessages.AddRange(dlqMessages);
+        }
     }
         
     public async Task FetchQueueMessages()
