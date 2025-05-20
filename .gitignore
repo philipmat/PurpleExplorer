@@ -428,3 +428,6 @@ $RECYCLE.BIN/
 ##
 .vscode/
 
+# backup app settings
+/appstate.json.backup
+/appstate-bak.json
