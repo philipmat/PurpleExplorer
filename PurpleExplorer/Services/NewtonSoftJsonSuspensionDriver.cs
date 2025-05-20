@@ -20,8 +20,16 @@ public class NewtonsoftJsonSuspensionDriver : ISuspensionDriver
 
     public IObservable<Unit> InvalidateState()
     {
+
         if (File.Exists(_file))
+        {
+            var initial = Console.ForegroundColor;
+            Console.ForegroundColor = ConsoleColor.Red;
+            Console.WriteLine($"Detected invalid state. Will delete {_file}");
+            Console.ForegroundColor = initial;
             File.Delete(_file);
+        }
+
         return Observable.Return(Unit.Default);
     }
 
@@ -35,6 +43,7 @@ public class NewtonsoftJsonSuspensionDriver : ISuspensionDriver
     public IObservable<Unit> SaveState(object state)
     {
         var lines = JsonConvert.SerializeObject(state, _settings);
+        Console.WriteLine($"Saving state: will write {lines.Length} lines to {_file}"); 
         File.WriteAllText(_file, lines);
         return Observable.Return(Unit.Default);
     }

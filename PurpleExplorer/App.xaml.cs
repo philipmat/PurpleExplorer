@@ -24,7 +24,14 @@ public class App : Application
         var appStatePath = "appstate.json";
         if (!File.Exists(appStatePath))
         {
-            File.Create(appStatePath).Close();
+            if (File.Exists("appstate.json.backup"))
+            {
+               File.Copy("appstate.json.backup", "appstate.json"); 
+            }
+            else
+            {
+                File.Create(appStatePath).Close();
+            }
         }
             
         var suspension = new AutoSuspendHelper(ApplicationLifetime);
