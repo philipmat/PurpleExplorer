@@ -445,9 +445,9 @@ public class MainWindowViewModel : ViewModelBase
                 _currentSubscription.Name, isDlq);
 
             if (!isDlq)
-                CurrentSubscription.ClearMessages();
+                CurrentSubscription?.ClearMessages();
             else
-                CurrentSubscription.ClearDlqMessages();
+                CurrentSubscription?.ClearDlqMessages();
         }
 
         if (CurrentQueue != null)
@@ -456,9 +456,9 @@ public class MainWindowViewModel : ViewModelBase
             purgedCount = await _queueHelper.PurgeMessages(connectionString, _currentQueue.Name, isDlq);
                 
             if (!isDlq)
-                CurrentQueue.ClearMessages();
+                CurrentQueue?.ClearMessages();
             else
-                CurrentQueue.ClearDlqMessages();
+                CurrentQueue?.ClearDlqMessages();
         }
         LoggingService.Log($"Purged {purgedCount} messages in {purgingPath}");
 
