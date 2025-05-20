@@ -124,10 +124,21 @@ public class TopicHelper : BaseHelper, ITopicHelper
         var path = EntityNameHelper.FormatSubscriptionPath(topicName, subscriptionName);
 
         var messageReceiver = GetMessageReceiver(connectionString, path, ReceiveMode.PeekLock);
-        var subscriptionMessages = await messageReceiver.PeekAsync(_appSettings.TopicMessageFetchCount);
-        await messageReceiver.CloseAsync();
+        IList<AzureMessage>? subscriptionMessages = new List<AzureMessage>();
+        try
+        {
+            subscriptionMessages = await messageReceiver.PeekAsync(_appSettings.TopicMessageFetchCount);
+        }
+        catch (ServiceBusException ex)
+        {
+            Console.WriteLine($"Error trying to get messages for {topicName} / {subscriptionName}:\n{ex}");
+        }
+        finally
+        {
+            await messageReceiver.CloseAsync();
+        }
 
-        var result = subscriptionMessages.Select(message => new Message(message, false)).ToList();
+        List<Message> result = subscriptionMessages.Select(message => new Message(message, false)).ToList();
         return result;
     }
 
@@ -138,10 +149,21 @@ public class TopicHelper : BaseHelper, ITopicHelper
         var deadletterPath = EntityNameHelper.FormatDeadLetterPath(path);
 
         var receiver = GetMessageReceiver(connectionString, deadletterPath, ReceiveMode.PeekLock);
-        var receivedMessages = await receiver.PeekAsync(_appSettings.TopicMessageFetchCount);
-        await receiver.CloseAsync();
+        IList<AzureMessage> receivedMessages = new List<AzureMessage>();
+        try
+        {
+            receivedMessages = await receiver.PeekAsync(_appSettings.TopicMessageFetchCount);
+        }
+        catch (ServiceBusException ex)
+        {
+            Console.WriteLine($"Error trying to get DQL messages for {topic} / {subscription}:\n{ex}");
+        }
+        finally
+        {
+            await receiver.CloseAsync();
+        }
 
-        var result = receivedMessages.Select(message => new Message(message, true)).ToList();
+        List<Message> result = receivedMessages.Select(message => new Message(message, true)).ToList();
         return result;
     }
 
