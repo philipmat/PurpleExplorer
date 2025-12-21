@@ -191,6 +191,16 @@ public class QueueHelper : BaseHelper, IQueueHelper
         return transferredCount;
     }
     
+    public async Task<ServiceBusQueue> GetQueue(ServiceBusConnectionString connectionString, string queuePath)
+    {
+        var client = GetManagementClient(connectionString);
+        var runtimeInfo = await client.GetQueueRuntimeInfoAsync(queuePath);
+        return new ServiceBusQueue(runtimeInfo)
+        {
+            Name = runtimeInfo.Path
+        };
+    }
+
     private async Task<List<ServiceBusQueue>> GetQueues(ManagementClient client)
     {
         var queueInfos = new List<QueueRuntimeInfo>();

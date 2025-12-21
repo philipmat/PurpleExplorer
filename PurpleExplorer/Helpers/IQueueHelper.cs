@@ -9,6 +9,7 @@ namespace PurpleExplorer.Helpers;
 public interface IQueueHelper
 {
     Task<IList<ServiceBusQueue>> GetQueues(ServiceBusConnectionString connectionString);
+    Task<ServiceBusQueue> GetQueue(ServiceBusConnectionString connectionString, string queuePath);
     public Task SendMessage(ServiceBusConnectionString connectionString, string topicPath, string content);
     public Task SendMessage(ServiceBusConnectionString connectionString, string topicPath, AzureMessage message);
     Task<IList<Message>> GetMessages(ServiceBusConnectionString connectionString, string queueName);

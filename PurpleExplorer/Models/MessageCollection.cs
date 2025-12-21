@@ -21,13 +21,13 @@ public abstract class MessageCollection : ReactiveObject
     public long MessageCount
     {
         get => _messageCount;
-        private set => this.RaiseAndSetIfChanged(ref _messageCount, value);
+        set => this.RaiseAndSetIfChanged(ref _messageCount, value);
     }
         
     public long DlqCount
     {
         get => _dlqCount;
-        private set => this.RaiseAndSetIfChanged(ref _dlqCount, value);
+        set => this.RaiseAndSetIfChanged(ref _dlqCount, value);
     }
 
     protected MessageCollection()
@@ -45,36 +45,32 @@ public abstract class MessageCollection : ReactiveObject
     public void AddMessages(IEnumerable<Message> messages)
     {
         Messages.AddRange(messages);
-        MessageCount = Messages.Count;
     }
 
     public void RemoveMessage(string messageId)
     {
         Messages.Remove(Messages.Single(msg => msg.MessageId.Equals(messageId)));
-        MessageCount = Messages.Count;
+        MessageCount--;
     }
         
     public void ClearMessages()
     {
         Messages.Clear();
-        MessageCount = Messages.Count;
     }
         
     public void AddDlqMessages(IEnumerable<Message> dlqMessages)
     {
         DlqMessages.AddRange(dlqMessages);
-        DlqCount = DlqMessages.Count;
     }
         
     public void RemoveDlqMessage(string messageId)
     {
         DlqMessages.Remove(DlqMessages.Single(msg => msg.MessageId.Equals(messageId)));
-        DlqCount = DlqMessages.Count;
+        DlqCount--;
     }
         
     public void ClearDlqMessages()
     {
         DlqMessages.Clear();
-        DlqCount = DlqMessages.Count;
     }
 }

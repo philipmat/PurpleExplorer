@@ -246,13 +246,28 @@ public class MainWindowViewModel : ViewModelBase
         {
             return;
         }
-            
+
+        var connectionString = CurrentSubscription.Topic.ServiceBus.ConnectionString;
+        var topicName = CurrentSubscription.Topic.Name;
+        var subscriptionName = CurrentSubscription.Name;
+
+        try
+        {
+            var subscription = await _topicHelper.GetSubscription(connectionString, topicName, subscriptionName);
+            CurrentSubscription.MessageCount = subscription.MessageCount;
+            CurrentSubscription.DlqCount = subscription.DlqCount;
+        }
+        catch (Exception ex)
+        {
+            LoggingService.Log($"Error fetching subscription runtime info: {ex.Message}");
+        }
+
         Messages.Clear();
         CurrentSubscription.ClearMessages();
         var messages =
-            await _topicHelper.GetMessagesBySubscription(CurrentSubscription.Topic.ServiceBus.ConnectionString,
-                CurrentSubscription.Topic.Name,
-                CurrentSubscription.Name);
+            await _topicHelper.GetMessagesBySubscription(connectionString,
+                topicName,
+                subscriptionName);
         if (messages is { Count: > 0 })
         {
             CurrentSubscription?.AddMessages(messages);
@@ -266,12 +281,27 @@ public class MainWindowViewModel : ViewModelBase
         {
             return;
         }
-            
+
+        var connectionString = CurrentSubscription.Topic.ServiceBus.ConnectionString;
+        var topicName = CurrentSubscription.Topic.Name;
+        var subscriptionName = CurrentSubscription.Name;
+
+        try
+        {
+            var subscription = await _topicHelper.GetSubscription(connectionString, topicName, subscriptionName);
+            CurrentSubscription.MessageCount = subscription.MessageCount;
+            CurrentSubscription.DlqCount = subscription.DlqCount;
+        }
+        catch (Exception ex)
+        {
+            LoggingService.Log($"Error fetching subscription runtime info: {ex.Message}");
+        }
+
         DlqMessages.Clear();
         CurrentSubscription?.ClearDlqMessages();
         var dlqMessages =
-            await _topicHelper.GetDlqMessages(CurrentSubscription.Topic.ServiceBus.ConnectionString,
-                CurrentSubscription.Topic.Name, CurrentSubscription.Name);
+            await _topicHelper.GetDlqMessages(connectionString,
+                topicName, subscriptionName);
         if (dlqMessages is { Count: > 0 })
         {
             CurrentSubscription?.AddDlqMessages(dlqMessages);
@@ -285,24 +315,52 @@ public class MainWindowViewModel : ViewModelBase
         {
             return;
         }
-            
+
+        var connectionString = CurrentQueue.ServiceBus.ConnectionString;
+        var queuePath = CurrentQueue.Name;
+
+        try
+        {
+            var queue = await _queueHelper.GetQueue(connectionString, queuePath);
+            CurrentQueue.MessageCount = queue.MessageCount;
+            CurrentQueue.DlqCount = queue.DlqCount;
+        }
+        catch (Exception ex)
+        {
+            LoggingService.Log($"Error fetching queue runtime info: {ex.Message}");
+        }
+
         Messages.Clear();
         CurrentQueue.ClearMessages();
-        var messages = await _queueHelper.GetMessages(CurrentQueue.ServiceBus.ConnectionString, CurrentQueue.Name);
+        var messages = await _queueHelper.GetMessages(connectionString, queuePath);
         CurrentQueue.AddMessages(messages);
         Messages.AddRange(messages);
     }
-        
+
     public async Task FetchQueueDlqMessages()
     {
         if (CurrentQueue == null)
         {
             return;
         }
-            
+
+        var connectionString = CurrentQueue.ServiceBus.ConnectionString;
+        var queuePath = CurrentQueue.Name;
+
+        try
+        {
+            var queue = await _queueHelper.GetQueue(connectionString, queuePath);
+            CurrentQueue.MessageCount = queue.MessageCount;
+            CurrentQueue.DlqCount = queue.DlqCount;
+        }
+        catch (Exception ex)
+        {
+            LoggingService.Log($"Error fetching queue runtime info: {ex.Message}");
+        }
+
         DlqMessages.Clear();
         CurrentQueue.ClearDlqMessages();
-        var messages = await _queueHelper.GetDlqMessages(CurrentQueue.ServiceBus.ConnectionString, CurrentQueue.Name);
+        var messages = await _queueHelper.GetDlqMessages(connectionString, queuePath);
         CurrentQueue.AddDlqMessages(messages);
         DlqMessages.AddRange(messages);
     }
@@ -463,9 +521,15 @@ public class MainWindowViewModel : ViewModelBase
                 _currentSubscription.Name, isDlq);
 
             if (!isDlq)
+            {
                 CurrentSubscription?.ClearMessages();
+                CurrentSubscription.MessageCount = 0;
+            }
             else
+            {
                 CurrentSubscription?.ClearDlqMessages();
+                CurrentSubscription.DlqCount = 0;
+            }
         }
 
         if (CurrentQueue != null)
@@ -474,9 +538,15 @@ public class MainWindowViewModel : ViewModelBase
             purgedCount = await _queueHelper.PurgeMessages(connectionString, _currentQueue.Name, isDlq);
                 
             if (!isDlq)
+            {
                 CurrentQueue?.ClearMessages();
+                CurrentQueue.MessageCount = 0;
+            }
             else
+            {
                 CurrentQueue?.ClearDlqMessages();
+                CurrentQueue.DlqCount = 0;
+            }
         }
         LoggingService.Log($"Purged {purgedCount} messages in {purgingPath}");
 

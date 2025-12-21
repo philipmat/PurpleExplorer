@@ -10,6 +10,8 @@ public interface ITopicHelper
 {
     public Task<NamespaceInfo> GetNamespaceInfo(ServiceBusConnectionString connectionString);
     public Task<IList<ServiceBusTopic>> GetTopicsAndSubscriptions(ServiceBusConnectionString connectionString);
+    public Task<ServiceBusSubscription> GetSubscription(ServiceBusConnectionString connectionString, string topicPath,
+        string subscriptionName);
     public Task<IList<Message>> GetDlqMessages(ServiceBusConnectionString connectionString, string topic, string subscription);
     public Task<IList<Models.Message>> GetMessagesBySubscription(ServiceBusConnectionString connectionString, string topicName, string subscriptionName);
     public Task SendMessage(ServiceBusConnectionString connectionString, string topicPath, string content);
