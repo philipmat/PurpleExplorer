@@ -183,11 +183,19 @@ public class MainWindowViewModel : ViewModelBase
         ConnectionString = new ServiceBusConnectionString
         {
             ConnectionString = returnedViewModel.ConnectionString,
-            UseManagedIdentity= returnedViewModel.UseManagedIdentity
+            UseManagedIdentity = returnedViewModel.UseManagedIdentity
         };
 
         if (string.IsNullOrEmpty(ConnectionString.ConnectionString))
         {
+            return;
+        }
+
+        if (ConnectedServiceBuses.Any(x =>
+                x.ConnectionString.ConnectionString == ConnectionString.ConnectionString &&
+                x.ConnectionString.UseManagedIdentity == ConnectionString.UseManagedIdentity))
+        {
+            await MessageBoxHelper.ShowMessage("Duplicate connection", "This connection is already open.");
             return;
         }
 
