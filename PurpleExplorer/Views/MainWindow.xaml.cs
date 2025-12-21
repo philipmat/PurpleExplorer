@@ -16,6 +16,13 @@ public class MainWindow : Window
 #if DEBUG
         this.AttachDevTools();
 #endif
+        Opened += MainWindow_Opened;
+    }
+
+    private void MainWindow_Opened(object sender, System.EventArgs e)
+    {
+        var mainWindowViewModel = DataContext as MainWindowViewModel;
+        mainWindowViewModel.ConnectionBtnPopupCommand();
     }
 
     private void InitializeComponent()
