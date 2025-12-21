@@ -1,0 +1,24 @@
+{
+  "$type": "PurpleExplorer.Models.AppState, PurpleExplorer",
+  "SavedConnectionStrings": {
+    "$type": "System.Collections.ObjectModel.ObservableCollection`1[[PurpleExplorer.Models.ServiceBusConnectionString, PurpleExplorer]], System.ObjectModel",
+    "$values": [
+      {
+        "$type": "PurpleExplorer.Models.ServiceBusConnectionString, PurpleExplorer",
+        "UseManagedIdentity": false,
+        "ConnectionString": "Endpoint=sb://your-service-bus.servicebus.windows.net/;SharedAccessKeyName=RootManageSharedAccessKey;SharedAccessKey=YourSharedAccessKey="
+      }
+    ]
+  },
+  "SavedMessages": {
+    "$type": "System.Collections.ObjectModel.ObservableCollection`1[[PurpleExplorer.Models.SavedMessage, PurpleExplorer]], System.ObjectModel",
+    "$values": []
+  },
+  "AppSettings": {
+    "$type": "PurpleExplorer.Models.AppSettings, PurpleExplorer",
+    "QueueListFetchCount": 100,
+    "QueueMessageFetchCount": 100,
+    "TopicListFetchCount": 100,
+    "TopicMessageFetchCount": 100
+  }
+}

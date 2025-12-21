@@ -87,6 +87,16 @@ public class MainWindowViewModel : ViewModelBase
         get => _currentQueue;
         set => this.RaiseAndSetIfChanged(ref _currentQueue, value);
     }
+
+    public double TopicListWidth
+    {
+        get => _appState.AppSettings.TopicListWidth;
+        set
+        {
+            _appState.AppSettings.TopicListWidth = value;
+            this.RaisePropertyChanged(nameof(TopicListWidth));
+        }
+    }
         
     public MessageCollection CurrentMessageCollection
     {
