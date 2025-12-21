@@ -22,6 +22,7 @@ public class App : Application
     public override void OnFrameworkInitializationCompleted()
     {
         var appStatePath = "appstate.json";
+        /* probably fixed with d009705, but leaving this here as a workaround if it shows up again
         if (!File.Exists(appStatePath))
         {
             if (File.Exists("appstate.json.backup"))
@@ -33,6 +34,7 @@ public class App : Application
                 File.Create(appStatePath).Close();
             }
         }
+        //*/
             
         var suspension = new AutoSuspendHelper(ApplicationLifetime);
         RxApp.SuspensionHost.CreateNewAppState = () => new AppState();
