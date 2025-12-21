@@ -46,7 +46,7 @@
                         Command="{Binding DeleteMessage}"
                         CommandParameter="{Binding $parent[Window]}">
                     <StackPanel Orientation="Horizontal">
-                        <DrawingPresenter Drawing="{DynamicResource Material.Delete}" />
+                        <!-- <DrawingPresenter Drawing="{DynamicResource Material.Delete}" /> -->
                         <TextBlock VerticalAlignment="Center">Delete message</TextBlock>
                     </StackPanel>
                 </Button>
@@ -54,7 +54,7 @@
                         IsVisible="{Binding !Message.IsDlq}"
                         Classes="topButton">
                     <StackPanel Orientation="Horizontal">
-                        <DrawingPresenter Drawing="{DynamicResource Material.EmailSend}" />
+                        <!-- <DrawingPresenter Drawing="{DynamicResource Material.EmailSend}" /> -->
                         <TextBlock VerticalAlignment="Center">Send to dead-letter</TextBlock>
                     </StackPanel>
                 </Button>
@@ -62,7 +62,7 @@
                         IsVisible="{Binding !!Message.IsDlq}"
                         Classes="topButton">
                     <StackPanel Orientation="Horizontal">
-                        <DrawingPresenter Drawing="{DynamicResource Material.EmailSend}" />
+                        <!-- <DrawingPresenter Drawing="{DynamicResource Material.EmailSend}" /> -->
                         <TextBlock VerticalAlignment="Center">Resubmit back to topic</TextBlock>
                     </StackPanel>
                 </Button>

@@ -95,7 +95,7 @@
                 </Grid.ColumnDefinitions>
             <TabControl Grid.Column="0">
                 <TabItem Header="{Binding TopicTabHeader}">
-                    <TreeView SelectionChanged="TreeView_SelectionChanged" Items="{Binding ConnectedServiceBuses}" Name="tvTopics">
+                    <TreeView SelectionChanged="TreeView_SelectionChanged" ItemsSource="{Binding ConnectedServiceBuses}" Name="tvTopics">
                         <TreeView.DataTemplates>
                             <TreeDataTemplate DataType="models:ServiceBusResource" ItemsSource="{Binding Topics}">
                                 <StackPanel Orientation="Horizontal">
@@ -133,7 +133,7 @@
                     </TreeView>
                 </TabItem>
                 <TabItem Header="{Binding QueueTabHeader}">
-                    <TreeView SelectionChanged="TreeView_SelectionChanged" Items="{Binding ConnectedServiceBuses}" Name="tvQueues">
+                    <TreeView SelectionChanged="TreeView_SelectionChanged" ItemsSource="{Binding ConnectedServiceBuses}" Name="tvQueues">
                         <TreeView.DataTemplates>
                             <TreeDataTemplate DataType="models:ServiceBusResource" ItemsSource="{Binding Queues}">
                                 <StackPanel Orientation="Horizontal">
@@ -170,7 +170,7 @@
 
             <TabControl Grid.Column="2">
                 <TabItem Header="{Binding MessagesTabHeader}" VerticalContentAlignment="Center">
-                    <DataGrid Items="{Binding Messages}" Tapped="MessagesGrid_Tapped"
+                    <DataGrid ItemsSource="{Binding Messages}" Tapped="MessagesGrid_Tapped"
                               DoubleTapped="MessagesGrid_DoubleTapped"
                               IsReadOnly="True" HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Auto"
                               CanUserReorderColumns="True" CanUserResizeColumns="True">
@@ -186,7 +186,7 @@
                         </DataGrid>
                     </TabItem>
                     <TabItem Header="{Binding DlqTabHeader}" VerticalContentAlignment="Center">
-                        <DataGrid Items="{Binding DlqMessages}" Tapped="MessagesGrid_Tapped"
+                        <DataGrid ItemsSource="{Binding DlqMessages}" Tapped="MessagesGrid_Tapped"
                               DoubleTapped="MessagesGrid_DoubleTapped" IsReadOnly="True"
                               CanUserReorderColumns="True" CanUserResizeColumns="True">
                             <DataGrid.Columns>

@@ -1,7 +1,11 @@
+using System;
 using System.IO;
 using Avalonia;
+using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Markup.Xaml;
 using Avalonia.ReactiveUI;
+using Projektanker.Icons.Avalonia;
+using Projektanker.Icons.Avalonia.FontAwesome;
 using PurpleExplorer.Helpers;
 using PurpleExplorer.Models;
 using PurpleExplorer.Services;
@@ -36,18 +40,25 @@ public class App : Application
         }
         //*/
             
-        var suspension = new AutoSuspendHelper(ApplicationLifetime);
+        var suspension = new AutoSuspendHelper(ApplicationLifetime!);
         RxApp.SuspensionHost.CreateNewAppState = () => new AppState();
         RxApp.SuspensionHost.SetupDefaultSuspendResume(new NewtonsoftJsonSuspensionDriver(appStatePath));
         suspension.OnFrameworkInitializationCompleted();
         var state = RxApp.SuspensionHost.GetAppState<AppState>();
 
-        Locator.CurrentMutable.RegisterLazySingleton(() => state, typeof(IAppState));
+        Locator.CurrentMutable.RegisterLazySingleton(() => state!, typeof(IAppState));
         Locator.CurrentMutable.RegisterLazySingleton(() => new LoggingService(), typeof(ILoggingService));
-        Locator.CurrentMutable.Register(() => new TopicHelper(state.AppSettings), typeof(ITopicHelper));
-        Locator.CurrentMutable.Register(() => new QueueHelper(state.AppSettings), typeof(IQueueHelper));
+        Locator.CurrentMutable.Register(() => new TopicHelper(state!.AppSettings), typeof(ITopicHelper));
+        Locator.CurrentMutable.Register(() => new QueueHelper(state!.AppSettings), typeof(IQueueHelper));
 
-        new MainWindow { DataContext = new MainWindowViewModel() }.Show();
+        if (ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
+        {
+            desktop.MainWindow = new MainWindow
+            {
+                DataContext = new MainWindowViewModel()
+            };
+        }
+
         base.OnFrameworkInitializationCompleted();
     }
 }
