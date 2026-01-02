@@ -25,7 +25,7 @@
             <RowDefinition Height="*" />
             <RowDefinition Height="100" />
         </Grid.RowDefinitions>
-        <DockPanel Grid.Column="0" Grid.Row="0" Dock="Left" Background="#380f14">
+        <DockPanel Grid.Column="0" Grid.Row="0" Dock="Left">
             <Button HorizontalAlignment="Left" Command="{Binding ConnectionBtnPopupCommand}"
                     Classes="topButton">
                 <StackPanel Orientation="Horizontal">
@@ -69,7 +69,7 @@
                 </StackPanel>
             </Button>
             <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" VerticalAlignment="Center">
-                <TextBlock Foreground="White" Margin="0,3,10,0" TextAlignment="Right">
+                <TextBlock Margin="0,3,10,0" TextAlignment="Right">
                     <TextBlock.Text>
                         <MultiBinding StringFormat="PurpleExplorer&#x0a;{0}">
                             <Binding Path="AppVersionText" />
@@ -95,19 +95,19 @@
                 </Grid.ColumnDefinitions>
             <TabControl Grid.Column="0">
                 <TabItem Header="{Binding TopicTabHeader}">
-                    <TreeView SelectionChanged="TreeView_SelectionChanged" Items="{Binding ConnectedServiceBuses}" Name="tvTopics">
+                    <TreeView SelectionChanged="TreeView_SelectionChanged" ItemsSource="{Binding ConnectedServiceBuses}" Name="tvTopics">
                         <TreeView.DataTemplates>
                             <TreeDataTemplate DataType="models:ServiceBusResource" ItemsSource="{Binding Topics}">
                                 <StackPanel Orientation="Horizontal">
                                     <i:Icon Value="fa-server" />
-                                    <TextBlock Foreground="Purple" Margin="5, 4" VerticalAlignment="Center"
+                                    <TextBlock Margin="5, 4" VerticalAlignment="Center"
                                                Text="{Binding Name}" />
                                 </StackPanel>
                             </TreeDataTemplate>
                             <TreeDataTemplate DataType="models:ServiceBusTopic" ItemsSource="{Binding Subscriptions}">
                                 <StackPanel Orientation="Horizontal">
                                     <i:Icon Value="fa-bars" />
-                                    <TextBlock Foreground="Purple" Margin="3,8" Text="{Binding Name}" />
+                                    <TextBlock Margin="3,8" Text="{Binding Name}" />
                                 </StackPanel>
                             </TreeDataTemplate>
                             <DataTemplate DataType="models:ServiceBusSubscription">
@@ -133,12 +133,12 @@
                     </TreeView>
                 </TabItem>
                 <TabItem Header="{Binding QueueTabHeader}">
-                    <TreeView SelectionChanged="TreeView_SelectionChanged" Items="{Binding ConnectedServiceBuses}" Name="tvQueues">
+                    <TreeView SelectionChanged="TreeView_SelectionChanged" ItemsSource="{Binding ConnectedServiceBuses}" Name="tvQueues">
                         <TreeView.DataTemplates>
                             <TreeDataTemplate DataType="models:ServiceBusResource" ItemsSource="{Binding Queues}">
                                 <StackPanel Orientation="Horizontal">
                                     <i:Icon Value="fa-server" />
-                                    <TextBlock Foreground="Purple" Margin="5, 4" VerticalAlignment="Center"
+                                    <TextBlock Margin="5, 4" VerticalAlignment="Center"
                                                Text="{Binding Name}" />
                                 </StackPanel>
                             </TreeDataTemplate>
@@ -170,7 +170,7 @@
 
             <TabControl Grid.Column="2">
                 <TabItem Header="{Binding MessagesTabHeader}" VerticalContentAlignment="Center">
-                    <DataGrid Items="{Binding Messages}" Tapped="MessagesGrid_Tapped"
+                    <DataGrid ItemsSource="{Binding Messages}" Tapped="MessagesGrid_Tapped"
                               DoubleTapped="MessagesGrid_DoubleTapped"
                               IsReadOnly="True" HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Auto"
                               CanUserReorderColumns="True" CanUserResizeColumns="True">
@@ -186,7 +186,7 @@
                         </DataGrid>
                     </TabItem>
                     <TabItem Header="{Binding DlqTabHeader}" VerticalContentAlignment="Center">
-                        <DataGrid Items="{Binding DlqMessages}" Tapped="MessagesGrid_Tapped"
+                        <DataGrid ItemsSource="{Binding DlqMessages}" Tapped="MessagesGrid_Tapped"
                               DoubleTapped="MessagesGrid_DoubleTapped" IsReadOnly="True"
                               CanUserReorderColumns="True" CanUserResizeColumns="True">
                             <DataGrid.Columns>

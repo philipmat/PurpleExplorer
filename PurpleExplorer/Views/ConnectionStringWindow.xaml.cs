@@ -1,6 +1,7 @@
 ﻿using System.Linq;
 using Avalonia;
 using Avalonia.Controls;
+using Avalonia.Input;
 using Avalonia.Interactivity;
 using Avalonia.Markup.Xaml;
 using PurpleExplorer.Helpers;
@@ -22,16 +23,21 @@ public class ConnectionStringWindow : Window
     {
         AvaloniaXamlLoader.Load(this);
     }
-    public async void btnSendClick(object sender, RoutedEventArgs e)
+
+    public async void btnSendClick(object? sender, RoutedEventArgs e)
     {
         var dataContext = DataContext as ConnectionStringWindowViewModel;
-        if (string.IsNullOrEmpty(dataContext.ConnectionString))
+        if (string.IsNullOrEmpty(dataContext?.ConnectionString))
             await MessageBoxHelper.ShowError("Please enter a service bus connection string.");
         else
         {
             dataContext.Cancel = false;
             Close();
         }
+    }
+    public async void btnSendClick2(object? sender, TappedEventArgs e)
+    {
+        btnSendClick(sender, e);
     }
 
     public async void btnSaveConnectionString(object sender, RoutedEventArgs e)

@@ -2,6 +2,7 @@
 using Avalonia.ReactiveUI;
 using Projektanker.Icons.Avalonia;
 using Projektanker.Icons.Avalonia.FontAwesome;
+using Projektanker.Icons.Avalonia.MaterialDesign;
 
 namespace PurpleExplorer;
 
@@ -15,10 +16,14 @@ static class Program
 
     // Avalonia configuration, don't remove; also used by visual designer.
     public static AppBuilder BuildAvaloniaApp()
-        => AppBuilder.Configure<App>()
+    {
+        IconProvider.Current
+            .Register<FontAwesomeIconProvider>()
+            .Register<MaterialDesignIconProvider>();
+        
+        return AppBuilder.Configure<App>()
             .UsePlatformDetect()
             .LogToTrace()
-            .UseReactiveUI()
-            .WithIcons(container => container
-                .Register<FontAwesomeIconProvider>());
+            .UseReactiveUI();
+    }
 }

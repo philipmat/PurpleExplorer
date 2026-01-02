@@ -1,5 +1,6 @@
 using Avalonia;
 using Avalonia.Controls;
+using Avalonia.Input;
 using Avalonia.Interactivity;
 using Avalonia.Markup.Xaml;
 using PurpleExplorer.Helpers;
@@ -30,7 +31,7 @@ public class MainWindow : Window
         AvaloniaXamlLoader.Load(this);
     }
 
-    private async void MessagesGrid_DoubleTapped(object sender, RoutedEventArgs e)
+    private async void MessagesGrid_DoubleTapped(object sender, TappedEventArgs e)
     {
         var grid = sender as DataGrid;
         var mainWindowViewModel = DataContext as MainWindowViewModel;
@@ -51,7 +52,7 @@ public class MainWindow : Window
         await ModalWindowHelper.ShowModalWindow<MessageDetailsWindow, MessageDetailsWindowViewModel>(viewModal);
     }
 
-    private void MessagesGrid_Tapped(object sender, RoutedEventArgs e)
+    private void MessagesGrid_Tapped(object sender, TappedEventArgs e)
     {
         var grid = sender as DataGrid;
         var mainWindowViewModel = DataContext as MainWindowViewModel;

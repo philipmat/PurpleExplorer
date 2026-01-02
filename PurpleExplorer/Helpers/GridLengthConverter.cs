@@ -7,7 +7,7 @@ namespace PurpleExplorer.Helpers;
 
 public class GridLengthConverter : IValueConverter
 {
-    public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
+    public object? Convert(object? value, Type targetType, object? parameter, CultureInfo culture)
     {
         if (value is double d)
         {
@@ -16,7 +16,7 @@ public class GridLengthConverter : IValueConverter
         return new GridLength(300);
     }
 
-    public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
+    public object? ConvertBack(object? value, Type targetType, object? parameter, CultureInfo culture)
     {
         if (value is GridLength gl)
         {
