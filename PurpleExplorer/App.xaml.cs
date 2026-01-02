@@ -1,11 +1,7 @@
-using System;
-using System.IO;
 using Avalonia;
 using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Markup.Xaml;
 using Avalonia.ReactiveUI;
-using Projektanker.Icons.Avalonia;
-using Projektanker.Icons.Avalonia.FontAwesome;
 using PurpleExplorer.Helpers;
 using PurpleExplorer.Models;
 using PurpleExplorer.Services;
