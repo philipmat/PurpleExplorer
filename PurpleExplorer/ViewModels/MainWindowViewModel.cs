@@ -632,6 +632,7 @@ public class MainWindowViewModel : ViewModelBase
 
         foreach (var serviceBusResource in ConnectedServiceBuses)
         {
+            var resourceMatches = Matches(serviceBusResource.Name);
             var filteredResource = new ServiceBusResource
             {
                 Name = serviceBusResource.Name,
@@ -642,6 +643,7 @@ public class MainWindowViewModel : ViewModelBase
             // Filter Topics and Subscriptions
             foreach (var topic in serviceBusResource.Topics)
             {
+                var topicMatches = resourceMatches || Matches(topic.Name);
                 var filteredTopic = new ServiceBusTopic
                 {
                     Name = topic.Name,
@@ -652,14 +654,14 @@ public class MainWindowViewModel : ViewModelBase
                 {
                     foreach (var subscription in topic.Subscriptions)
                     {
-                        if (Matches(subscription.Name))
+                        if (topicMatches || Matches(subscription.Name))
                         {
                             filteredTopic.AddSubscriptions(subscription);
                         }
                     }
                 }
 
-                if (filteredTopic.Subscriptions != null && filteredTopic.Subscriptions.Count > 0 || Matches(topic.Name))
+                if (filteredTopic.Subscriptions != null && filteredTopic.Subscriptions.Count > 0 || topicMatches)
                 {
                     filteredResource.AddTopics(filteredTopic);
                 }
@@ -668,7 +670,7 @@ public class MainWindowViewModel : ViewModelBase
             // Filter Queues
             foreach (var queue in serviceBusResource.Queues)
             {
-                if (Matches(queue.Name))
+                if (resourceMatches || Matches(queue.Name))
                 {
                     filteredResource.AddQueues(queue);
                 }
@@ -676,7 +678,7 @@ public class MainWindowViewModel : ViewModelBase
 
             if (filteredResource.Topics != null && filteredResource.Topics.Count > 0 ||
                 filteredResource.Queues != null && filteredResource.Queues.Count > 0 ||
-                Matches(filteredResource.Name))
+                resourceMatches)
             {
                 FilteredConnectedServiceBuses.Add(filteredResource);
             }

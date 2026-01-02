@@ -104,10 +104,11 @@
             <TabControl Grid.Column="0">
                 <TabItem Header="{Binding TopicTabHeader}">
                     <DockPanel>
-                        <StackPanel DockPanel.Dock="Top" Orientation="Vertical" Margin="5">
-                            <TextBox Text="{Binding SearchText}" Watermark="Filter tree..." />
-                            <CheckBox IsChecked="{Binding IsRegex}" Content="Regex" Margin="0,5,0,0" />
-                        </StackPanel>
+                        <TextBox DockPanel.Dock="Top" Text="{Binding SearchText}" Watermark="Filter tree..." Margin="5">
+                            <TextBox.InnerRightContent>
+                                <CheckBox IsChecked="{Binding IsRegex}" Content="Regex" VerticalAlignment="Center" Margin="0,0,5,0" BorderThickness="0" Background="Transparent" />
+                            </TextBox.InnerRightContent>
+                        </TextBox>
                         <TreeView SelectionChanged="TreeView_SelectionChanged" ItemsSource="{Binding FilteredConnectedServiceBuses}" Name="tvTopics">
                         <TreeView.DataTemplates>
                             <TreeDataTemplate DataType="models:ServiceBusResource" ItemsSource="{Binding Topics}">
@@ -148,10 +149,11 @@
                 </TabItem>
                 <TabItem Header="{Binding QueueTabHeader}">
                     <DockPanel>
-                        <StackPanel DockPanel.Dock="Top" Orientation="Vertical" Margin="5">
-                            <TextBox Text="{Binding SearchText}" Watermark="Filter tree..." />
-                            <CheckBox IsChecked="{Binding IsRegex}" Content="Regex" Margin="0,5,0,0" />
-                        </StackPanel>
+                        <TextBox DockPanel.Dock="Top" Text="{Binding SearchText}" Watermark="Filter tree..." Margin="5">
+                            <TextBox.InnerRightContent>
+                                <CheckBox IsChecked="{Binding IsRegex}" Content="Regex" VerticalAlignment="Center" Margin="0,0,5,0" BorderThickness="0" Background="Transparent" />
+                            </TextBox.InnerRightContent>
+                        </TextBox>
                         <TreeView SelectionChanged="TreeView_SelectionChanged" ItemsSource="{Binding FilteredConnectedServiceBuses}" Name="tvQueues">
                         <TreeView.DataTemplates>
                             <TreeDataTemplate DataType="models:ServiceBusResource" ItemsSource="{Binding Queues}">
