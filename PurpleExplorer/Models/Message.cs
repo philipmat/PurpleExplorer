@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Text;
 using AzureMessage = Microsoft.Azure.ServiceBus.Message;
 
@@ -18,6 +19,7 @@ public class Message
     public DateTime EnqueueTimeUtc { get; set; }
     public string DeadLetterReason { get; set; }
     public bool IsDlq { get; }
+    public IDictionary<string, object> ApplicationProperties { get; set; }
         
     public Message(AzureMessage azureMessage, bool isDlq)
     {
@@ -32,6 +34,7 @@ public class Message
         this.TimeToLive = azureMessage.TimeToLive;
         this.IsDlq = isDlq;
         this.EnqueueTimeUtc = azureMessage.SystemProperties.EnqueuedTimeUtc;
+        this.ApplicationProperties = azureMessage.UserProperties;
         this.DeadLetterReason = azureMessage.UserProperties.ContainsKey("DeadLetterReason")
             ? azureMessage.UserProperties["DeadLetterReason"].ToString()
             : string.Empty;

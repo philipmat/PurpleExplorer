@@ -119,6 +119,16 @@
                            IsVisible="{Binding Message.IsDlq}"
                            Text="{Binding Message.DeadLetterReason}" />
             </Grid>
+            <TextBlock Text="Application Properties" FontWeight="Bold" Margin="5,10,0,5" />
+            <DataGrid ItemsSource="{Binding Message.ApplicationProperties}" IsReadOnly="True"
+                      CanUserResizeColumns="True"
+                      GridLinesVisibility="All"
+                      HorizontalAlignment="Stretch">
+                <DataGrid.Columns>
+                    <DataGridTextColumn Header="Key" Binding="{Binding Key}" Width="150" />
+                    <DataGridTextColumn Header="Value" Binding="{Binding Value}" Width="*" />
+                </DataGrid.Columns>
+            </DataGrid>
         </StackPanel>
     </ScrollViewer>
 </Window>
