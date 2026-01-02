@@ -103,7 +103,12 @@
                 </Grid.ColumnDefinitions>
             <TabControl Grid.Column="0">
                 <TabItem Header="{Binding TopicTabHeader}">
-                    <TreeView SelectionChanged="TreeView_SelectionChanged" ItemsSource="{Binding ConnectedServiceBuses}" Name="tvTopics">
+                    <DockPanel>
+                        <StackPanel DockPanel.Dock="Top" Orientation="Vertical" Margin="5">
+                            <TextBox Text="{Binding SearchText}" Watermark="Filter tree..." />
+                            <CheckBox IsChecked="{Binding IsRegex}" Content="Regex" Margin="0,5,0,0" />
+                        </StackPanel>
+                        <TreeView SelectionChanged="TreeView_SelectionChanged" ItemsSource="{Binding FilteredConnectedServiceBuses}" Name="tvTopics">
                         <TreeView.DataTemplates>
                             <TreeDataTemplate DataType="models:ServiceBusResource" ItemsSource="{Binding Topics}">
                                 <StackPanel Orientation="Horizontal">
@@ -139,9 +144,15 @@
                             </Style>
                         </TreeView.Styles>
                     </TreeView>
+                    </DockPanel>
                 </TabItem>
                 <TabItem Header="{Binding QueueTabHeader}">
-                    <TreeView SelectionChanged="TreeView_SelectionChanged" ItemsSource="{Binding ConnectedServiceBuses}" Name="tvQueues">
+                    <DockPanel>
+                        <StackPanel DockPanel.Dock="Top" Orientation="Vertical" Margin="5">
+                            <TextBox Text="{Binding SearchText}" Watermark="Filter tree..." />
+                            <CheckBox IsChecked="{Binding IsRegex}" Content="Regex" Margin="0,5,0,0" />
+                        </StackPanel>
+                        <TreeView SelectionChanged="TreeView_SelectionChanged" ItemsSource="{Binding FilteredConnectedServiceBuses}" Name="tvQueues">
                         <TreeView.DataTemplates>
                             <TreeDataTemplate DataType="models:ServiceBusResource" ItemsSource="{Binding Queues}">
                                 <StackPanel Orientation="Horizontal">
@@ -171,6 +182,7 @@
                             </Style>
                         </TreeView.Styles>
                     </TreeView>
+                    </DockPanel>
                 </TabItem>
             </TabControl>
 
