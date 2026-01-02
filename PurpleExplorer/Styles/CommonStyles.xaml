@@ -3,7 +3,6 @@
         xmlns:i="clr-namespace:Projektanker.Icons.Avalonia;assembly=Projektanker.Icons.Avalonia">
     <Style Selector="Button.topButton">
         <Setter Property="Background" Value="Transparent" />
-        <Setter Property="Foreground" Value="White" />
         <Setter Property="Margin" Value="1,0" />
         <Setter Property="BorderThickness" Value="0,0,2,0" />
     </Style>
