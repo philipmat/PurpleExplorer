@@ -33,7 +33,14 @@ public class MainWindowViewModel : ViewModelBase
     private IObservable<bool> _queueLevelActionEnabled;
     private MessageCollection _currentMessageCollection;
     private IAppState _appState;
-        
+    private bool _isBusy;
+
+    public bool IsBusy
+    {
+        get => _isBusy;
+        set => this.RaiseAndSetIfChanged(ref _isBusy, value);
+    }
+
     public ObservableCollection<Message> Messages { get; }
     public ObservableCollection<Message> DlqMessages { get; }
     public ObservableCollection<ServiceBusResource> ConnectedServiceBuses { get; }
@@ -201,6 +208,7 @@ public class MainWindowViewModel : ViewModelBase
 
         try
         {
+            IsBusy = true;
             LoggingService.Log("Connecting...");
 
             var namespaceInfo = await _topicHelper.GetNamespaceInfo(ConnectionString);
@@ -236,6 +244,7 @@ public class MainWindowViewModel : ViewModelBase
         }
         finally
         {
+            IsBusy = false;
             RefreshTabHeaders();
         }
     }
@@ -394,15 +403,24 @@ public class MainWindowViewModel : ViewModelBase
 
     public async Task RefreshConnectedServiceBuses()
     {
-        foreach (var serviceBusResource in ConnectedServiceBuses)
+        try
         {
-            var topicsAndSubscriptions = await _topicHelper.GetTopicsAndSubscriptions(serviceBusResource.ConnectionString);
-            var serviceBusQueues = await _queueHelper.GetQueues(serviceBusResource.ConnectionString);
+            IsBusy = true;
+            foreach (var serviceBusResource in ConnectedServiceBuses)
+            {
+                var topicsAndSubscriptions =
+                    await _topicHelper.GetTopicsAndSubscriptions(serviceBusResource.ConnectionString);
+                var serviceBusQueues = await _queueHelper.GetQueues(serviceBusResource.ConnectionString);
 
-            serviceBusResource.Topics.Clear();
-            serviceBusResource.Queues.Clear();
-            serviceBusResource.AddTopics(topicsAndSubscriptions.ToArray());
-            serviceBusResource.AddQueues(serviceBusQueues.ToArray());
+                serviceBusResource.Topics.Clear();
+                serviceBusResource.Queues.Clear();
+                serviceBusResource.AddTopics(topicsAndSubscriptions.ToArray());
+                serviceBusResource.AddQueues(serviceBusQueues.ToArray());
+            }
+        }
+        finally
+        {
+            IsBusy = false;
         }
     }
         
@@ -423,20 +441,29 @@ public class MainWindowViewModel : ViewModelBase
         {
             return;
         }
-            
-        LoggingService.Log("Sending message...");
-        if (CurrentTopic != null)
-        {
-            var connectionString = CurrentTopic.ServiceBus.ConnectionString;
-            await _topicHelper.SendMessage(connectionString, CurrentTopic.Name, messageText);
-        }
 
-        if (CurrentQueue != null)
+        try
         {
-            var connectionString = CurrentQueue.ServiceBus.ConnectionString;
-            await _queueHelper.SendMessage(connectionString, CurrentQueue.Name, messageText);
+            IsBusy = true;
+            LoggingService.Log("Sending message...");
+            if (CurrentTopic != null)
+            {
+                var connectionString = CurrentTopic.ServiceBus.ConnectionString;
+                await _topicHelper.SendMessage(connectionString, CurrentTopic.Name, messageText);
+            }
+
+            if (CurrentQueue != null)
+            {
+                var connectionString = CurrentQueue.ServiceBus.ConnectionString;
+                await _queueHelper.SendMessage(connectionString, CurrentQueue.Name, messageText);
+            }
+
+            LoggingService.Log("Message sent");
         }
-        LoggingService.Log("Message sent");
+        finally
+        {
+            IsBusy = false;
+        }
     }
 
     public async void TransferDeadletterMessages()
@@ -466,21 +493,30 @@ public class MainWindowViewModel : ViewModelBase
             return;
         }
 
-        LoggingService.Log($"Transferring ALL messages in {dlqPath}... (might take some time)");
-        long transferCount = -1;
-        if (CurrentSubscription != null)
+        try
         {
-            var connectionString = CurrentSubscription.Topic.ServiceBus.ConnectionString;
-            transferCount = await _topicHelper.TransferDlqMessages(connectionString, _currentTopic.Name,
-                _currentSubscription.Name);
-        }
+            IsBusy = true;
+            LoggingService.Log($"Transferring ALL messages in {dlqPath}... (might take some time)");
+            long transferCount = -1;
+            if (CurrentSubscription != null)
+            {
+                var connectionString = CurrentSubscription.Topic.ServiceBus.ConnectionString;
+                transferCount = await _topicHelper.TransferDlqMessages(connectionString, _currentTopic.Name,
+                    _currentSubscription.Name);
+            }
 
-        if (CurrentQueue != null)
-        {
-            var connectionString = CurrentQueue.ServiceBus.ConnectionString;
-            transferCount = await _queueHelper.TransferDlqMessages(connectionString, _currentQueue.Name);
+            if (CurrentQueue != null)
+            {
+                var connectionString = CurrentQueue.ServiceBus.ConnectionString;
+                transferCount = await _queueHelper.TransferDlqMessages(connectionString, _currentQueue.Name);
+            }
+
+            LoggingService.Log($"Transferred {transferCount} messages in {dlqPath}");
         }
-        LoggingService.Log($"Transferred {transferCount} messages in {dlqPath}");
+        finally
+        {
+            IsBusy = false;
+        }
     }
 
     public async void PurgeMessages(string isDlqText)
@@ -512,67 +548,92 @@ public class MainWindowViewModel : ViewModelBase
             return;
         }
 
-        LoggingService.Log($"Purging ALL messages in {purgingPath}... (might take some time)");
-        long purgedCount = -1;
-        if (CurrentSubscription != null)
+        try
         {
-            var connectionString = CurrentSubscription.Topic.ServiceBus.ConnectionString;
-            purgedCount = await _topicHelper.PurgeMessages(connectionString, _currentTopic.Name,
-                _currentSubscription.Name, isDlq);
+            IsBusy = true;
+            LoggingService.Log($"Purging ALL messages in {purgingPath}... (might take some time)");
+            long purgedCount = -1;
+            if (CurrentSubscription != null)
+            {
+                var connectionString = CurrentSubscription.Topic.ServiceBus.ConnectionString;
+                purgedCount = await _topicHelper.PurgeMessages(connectionString, _currentTopic.Name,
+                    _currentSubscription.Name, isDlq);
 
-            if (!isDlq)
-            {
-                CurrentSubscription?.ClearMessages();
-                CurrentSubscription.MessageCount = 0;
+                if (!isDlq)
+                {
+                    CurrentSubscription?.ClearMessages();
+                    CurrentSubscription.MessageCount = 0;
+                }
+                else
+                {
+                    CurrentSubscription?.ClearDlqMessages();
+                    CurrentSubscription.DlqCount = 0;
+                }
             }
-            else
+
+            if (CurrentQueue != null)
             {
-                CurrentSubscription?.ClearDlqMessages();
-                CurrentSubscription.DlqCount = 0;
+                var connectionString = CurrentQueue.ServiceBus.ConnectionString;
+                purgedCount = await _queueHelper.PurgeMessages(connectionString, _currentQueue.Name, isDlq);
+
+                if (!isDlq)
+                {
+                    CurrentQueue?.ClearMessages();
+                    CurrentQueue.MessageCount = 0;
+                }
+                else
+                {
+                    CurrentQueue?.ClearDlqMessages();
+                    CurrentQueue.DlqCount = 0;
+                }
             }
+
+            LoggingService.Log($"Purged {purgedCount} messages in {purgingPath}");
+
+            // Refreshing messages
+            await FetchMessages();
         }
-
-        if (CurrentQueue != null)
+        finally
         {
-            var connectionString = CurrentQueue.ServiceBus.ConnectionString;
-            purgedCount = await _queueHelper.PurgeMessages(connectionString, _currentQueue.Name, isDlq);
-                
-            if (!isDlq)
-            {
-                CurrentQueue?.ClearMessages();
-                CurrentQueue.MessageCount = 0;
-            }
-            else
-            {
-                CurrentQueue?.ClearDlqMessages();
-                CurrentQueue.DlqCount = 0;
-            }
+            IsBusy = false;
         }
-        LoggingService.Log($"Purged {purgedCount} messages in {purgingPath}");
-
-        // Refreshing messages
-        await FetchMessages();
     }
 
     public async Task Refresh()
     {
-        await RefreshConnectedServiceBuses();
-        RefreshTabHeaders();
-        await FetchMessages();
+        try
+        {
+            IsBusy = true;
+            await RefreshConnectedServiceBuses();
+            RefreshTabHeaders();
+            await FetchMessages();
+        }
+        finally
+        {
+            IsBusy = false;
+        }
     }
         
     public async Task FetchMessages()
     {
-        LoggingService.Log("Fetching messages...");
+        try
+        {
+            IsBusy = true;
+            LoggingService.Log("Fetching messages...");
 
-        await Task.WhenAll(
-            FetchSubscriptionMessages(),
-            FetchSubscriptionDlqMessages(),
-            FetchQueueMessages(),
-            FetchQueueDlqMessages()
-        );
+            await Task.WhenAll(
+                FetchSubscriptionMessages(),
+                FetchSubscriptionDlqMessages(),
+                FetchQueueMessages(),
+                FetchQueueDlqMessages()
+            );
 
-        LoggingService.Log("Fetched messages");
+            LoggingService.Log("Fetched messages");
+        }
+        finally
+        {
+            IsBusy = false;
+        }
     }
 
     public void SetSelectedSubscription(ServiceBusSubscription subscription)
