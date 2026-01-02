@@ -100,14 +100,14 @@
                             <TreeDataTemplate DataType="models:ServiceBusResource" ItemsSource="{Binding Topics}">
                                 <StackPanel Orientation="Horizontal">
                                     <i:Icon Value="fa-server" />
-                                    <TextBlock Foreground="Purple" Margin="5, 4" VerticalAlignment="Center"
+                                    <TextBlock Margin="5, 4" VerticalAlignment="Center"
                                                Text="{Binding Name}" />
                                 </StackPanel>
                             </TreeDataTemplate>
                             <TreeDataTemplate DataType="models:ServiceBusTopic" ItemsSource="{Binding Subscriptions}">
                                 <StackPanel Orientation="Horizontal">
                                     <i:Icon Value="fa-bars" />
-                                    <TextBlock Foreground="Purple" Margin="3,8" Text="{Binding Name}" />
+                                    <TextBlock Margin="3,8" Text="{Binding Name}" />
                                 </StackPanel>
                             </TreeDataTemplate>
                             <DataTemplate DataType="models:ServiceBusSubscription">
@@ -138,7 +138,7 @@
                             <TreeDataTemplate DataType="models:ServiceBusResource" ItemsSource="{Binding Queues}">
                                 <StackPanel Orientation="Horizontal">
                                     <i:Icon Value="fa-server" />
-                                    <TextBlock Foreground="Purple" Margin="5, 4" VerticalAlignment="Center"
+                                    <TextBlock Margin="5, 4" VerticalAlignment="Center"
                                                Text="{Binding Name}" />
                                 </StackPanel>
                             </TreeDataTemplate>
