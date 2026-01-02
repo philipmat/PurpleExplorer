@@ -25,7 +25,9 @@ public class MainWindowViewModel : ViewModelBase
     private string _dlqTabHeader;
     private string _topicTabHeader;
     private string _queueTabHeader;
-        
+    private string _searchText;
+    private bool _isRegex;
+
     private ServiceBusSubscription _currentSubscription;
     private ServiceBusTopic _currentTopic;
     private ServiceBusQueue _currentQueue;
@@ -44,7 +46,8 @@ public class MainWindowViewModel : ViewModelBase
     public ObservableCollection<Message> Messages { get; }
     public ObservableCollection<Message> DlqMessages { get; }
     public ObservableCollection<ServiceBusResource> ConnectedServiceBuses { get; }
-        
+    public ObservableCollection<ServiceBusResource> FilteredConnectedServiceBuses { get; }
+
     public ServiceBusConnectionString ConnectionString { get; set; }
 
     public string MessagesTabHeader
@@ -70,7 +73,27 @@ public class MainWindowViewModel : ViewModelBase
         get => _queueTabHeader;
         set => this.RaiseAndSetIfChanged(ref _queueTabHeader, value);
     }
-        
+
+    public string SearchText
+    {
+        get => _searchText;
+        set
+        {
+            this.RaiseAndSetIfChanged(ref _searchText, value);
+            FilterTree();
+        }
+    }
+
+    public bool IsRegex
+    {
+        get => _isRegex;
+        set
+        {
+            this.RaiseAndSetIfChanged(ref _isRegex, value);
+            FilterTree();
+        }
+    }
+
     public ServiceBusSubscription CurrentSubscription
     {
         get => _currentSubscription;
@@ -136,6 +159,8 @@ public class MainWindowViewModel : ViewModelBase
         Messages = new ObservableCollection<Message>();
         DlqMessages = new ObservableCollection<Message>();
         ConnectedServiceBuses = new ObservableCollection<ServiceBusResource>();
+        FilteredConnectedServiceBuses = new ObservableCollection<ServiceBusResource>();
+        ConnectedServiceBuses.CollectionChanged += (sender, args) => FilterTree();
 
         _queueLevelActionEnabled = this.WhenAnyValue(
             x => x.CurrentSubscription,
@@ -417,6 +442,8 @@ public class MainWindowViewModel : ViewModelBase
                 serviceBusResource.AddTopics(topicsAndSubscriptions.ToArray());
                 serviceBusResource.AddQueues(serviceBusQueues.ToArray());
             }
+
+            FilterTree();
         }
         finally
         {
@@ -597,6 +624,87 @@ public class MainWindowViewModel : ViewModelBase
         {
             IsBusy = false;
         }
+    }
+
+    private void FilterTree()
+    {
+        FilteredConnectedServiceBuses.Clear();
+
+        foreach (var serviceBusResource in ConnectedServiceBuses)
+        {
+            var resourceMatches = Matches(serviceBusResource.Name);
+            var filteredResource = new ServiceBusResource
+            {
+                Name = serviceBusResource.Name,
+                CreatedTime = serviceBusResource.CreatedTime,
+                ConnectionString = serviceBusResource.ConnectionString
+            };
+
+            // Filter Topics and Subscriptions
+            foreach (var topic in serviceBusResource.Topics)
+            {
+                var topicMatches = resourceMatches || Matches(topic.Name);
+                var filteredTopic = new ServiceBusTopic
+                {
+                    Name = topic.Name,
+                    ServiceBus = filteredResource
+                };
+
+                if (topic.Subscriptions != null)
+                {
+                    foreach (var subscription in topic.Subscriptions)
+                    {
+                        if (topicMatches || Matches(subscription.Name))
+                        {
+                            filteredTopic.AddSubscriptions(subscription);
+                        }
+                    }
+                }
+
+                if (filteredTopic.Subscriptions != null && filteredTopic.Subscriptions.Count > 0 || topicMatches)
+                {
+                    filteredResource.AddTopics(filteredTopic);
+                }
+            }
+
+            // Filter Queues
+            foreach (var queue in serviceBusResource.Queues)
+            {
+                if (resourceMatches || Matches(queue.Name))
+                {
+                    filteredResource.AddQueues(queue);
+                }
+            }
+
+            if (filteredResource.Topics != null && filteredResource.Topics.Count > 0 ||
+                filteredResource.Queues != null && filteredResource.Queues.Count > 0 ||
+                resourceMatches)
+            {
+                FilteredConnectedServiceBuses.Add(filteredResource);
+            }
+        }
+    }
+
+    private bool Matches(string text)
+    {
+        if (string.IsNullOrEmpty(SearchText))
+        {
+            return true;
+        }
+
+        if (IsRegex)
+        {
+            try
+            {
+                return System.Text.RegularExpressions.Regex.IsMatch(text, SearchText, System.Text.RegularExpressions.RegexOptions.IgnoreCase);
+            }
+            catch
+            {
+                return false;
+            }
+        }
+
+        return text.Contains(SearchText, StringComparison.OrdinalIgnoreCase);
     }
 
     public async Task Refresh()

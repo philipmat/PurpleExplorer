@@ -103,7 +103,13 @@
                 </Grid.ColumnDefinitions>
             <TabControl Grid.Column="0">
                 <TabItem Header="{Binding TopicTabHeader}">
-                    <TreeView SelectionChanged="TreeView_SelectionChanged" ItemsSource="{Binding ConnectedServiceBuses}" Name="tvTopics">
+                    <DockPanel>
+                        <TextBox DockPanel.Dock="Top" Text="{Binding SearchText}" Watermark="Filter tree..." Margin="5">
+                            <TextBox.InnerRightContent>
+                                <CheckBox IsChecked="{Binding IsRegex}" Content="Regex" VerticalAlignment="Center" Margin="0,0,5,0" BorderThickness="0" Background="Transparent" />
+                            </TextBox.InnerRightContent>
+                        </TextBox>
+                        <TreeView SelectionChanged="TreeView_SelectionChanged" ItemsSource="{Binding FilteredConnectedServiceBuses}" Name="tvTopics">
                         <TreeView.DataTemplates>
                             <TreeDataTemplate DataType="models:ServiceBusResource" ItemsSource="{Binding Topics}">
                                 <StackPanel Orientation="Horizontal">
@@ -139,9 +145,16 @@
                             </Style>
                         </TreeView.Styles>
                     </TreeView>
+                    </DockPanel>
                 </TabItem>
                 <TabItem Header="{Binding QueueTabHeader}">
-                    <TreeView SelectionChanged="TreeView_SelectionChanged" ItemsSource="{Binding ConnectedServiceBuses}" Name="tvQueues">
+                    <DockPanel>
+                        <TextBox DockPanel.Dock="Top" Text="{Binding SearchText}" Watermark="Filter tree..." Margin="5">
+                            <TextBox.InnerRightContent>
+                                <CheckBox IsChecked="{Binding IsRegex}" Content="Regex" VerticalAlignment="Center" Margin="0,0,5,0" BorderThickness="0" Background="Transparent" />
+                            </TextBox.InnerRightContent>
+                        </TextBox>
+                        <TreeView SelectionChanged="TreeView_SelectionChanged" ItemsSource="{Binding FilteredConnectedServiceBuses}" Name="tvQueues">
                         <TreeView.DataTemplates>
                             <TreeDataTemplate DataType="models:ServiceBusResource" ItemsSource="{Binding Queues}">
                                 <StackPanel Orientation="Horizontal">
@@ -171,6 +184,7 @@
                             </Style>
                         </TreeView.Styles>
                     </TreeView>
+                    </DockPanel>
                 </TabItem>
             </TabControl>
 
