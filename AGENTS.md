@@ -47,3 +47,9 @@ PurpleExplorer is a cross-platform desktop application for managing Azure Servic
 - **Running the app:** Use `dotnet run --project PurpleExplorer/PurpleExplorer.csproj`.
 - **Building:** `dotnet build`.
 - **Formatting:** Follow the existing C# coding style (standard .NET conventions).
+    - **Order of class members**: The order of class members should follow a logical sequence, starting with fields (constants, then readonly, then instance),
+      then constructors, followed by properties, and finally methods.  
+      - Within each category, the order is: public, protected, internal, private.
+      - There should be one blank line between each category.
+      - There should be no public fields.
+      - This makes the code easier to read and understand.
