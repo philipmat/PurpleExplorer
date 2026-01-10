@@ -9,7 +9,7 @@ PurpleExplorer is a cross-platform desktop application for managing Azure Servic
 - **Framework:** [Avalonia UI](https://avaloniaui.net/) (Cross-platform UI framework for .NET)
 - **Pattern:** MVVM (Model-View-ViewModel) using [ReactiveUI](https://www.reactiveui.net/)
 - **Runtime:** .NET 8.0
-- **Azure SDK:** `Microsoft.Azure.ServiceBus` (Legacy SDK, but currently used in the project)
+- **Azure SDK:** `Azure.Messaging.ServiceBus`
 
 ## Project Structure
 - `PurpleExplorer/`: Main project directory.
@@ -40,7 +40,7 @@ PurpleExplorer is a cross-platform desktop application for managing Azure Servic
 
 ## Important Notes for Agents
 - **Destructive Actions**: Actions like "Delete Message" or "Purge" have significant consequences. Ensure the user is aware of the risks (as noted in the README regarding `DeliveryCount`).
-- **Azure SDK**: The project currently uses `Microsoft.Azure.ServiceBus`. If upgrading to `Azure.Messaging.ServiceBus`, extensive changes in `TopicHelper` and `QueueHelper` will be required.
+- **Azure SDK**: The project uses `Azure.Messaging.ServiceBus`. 
 - **Tests**: Currently, the project lacks automated tests. When adding new features, consider adding unit tests in a separate test project (e.g., `PurpleExplorer.Tests`).
 
 ## Development Workflow

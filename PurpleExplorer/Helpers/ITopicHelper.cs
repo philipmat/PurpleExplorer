@@ -1,14 +1,14 @@
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using Microsoft.Azure.ServiceBus.Management;
+using Azure.Messaging.ServiceBus.Administration;
 using PurpleExplorer.Models;
-using AzureMessage = Microsoft.Azure.ServiceBus.Message;
+using AzureMessage = Azure.Messaging.ServiceBus.ServiceBusMessage;
 
 namespace PurpleExplorer.Helpers;
 
 public interface ITopicHelper
 {
-    public Task<NamespaceInfo> GetNamespaceInfo(ServiceBusConnectionString connectionString);
+    public Task<NamespaceProperties> GetNamespaceInfo(ServiceBusConnectionString connectionString);
     public Task<IList<ServiceBusTopic>> GetTopicsAndSubscriptions(ServiceBusConnectionString connectionString);
     public Task<ServiceBusSubscription> GetSubscription(ServiceBusConnectionString connectionString, string topicPath,
         string subscriptionName);

@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
-using System.Text;
-using AzureMessage = Microsoft.Azure.ServiceBus.Message;
+using Azure.Messaging.ServiceBus;
 
 namespace PurpleExplorer.Models;
 
@@ -16,27 +15,27 @@ public class Message
     public int DeliveryCount { get; set; }
     public long SequenceNumber { get; set; }
     public TimeSpan TimeToLive { get; set; }
-    public DateTime EnqueueTimeUtc { get; set; }
+    public DateTimeOffset EnqueueTimeUtc { get; set; }
     public string DeadLetterReason { get; set; }
     public bool IsDlq { get; }
-    public IDictionary<string, object> ApplicationProperties { get; set; }
+    public IReadOnlyDictionary<string, object> ApplicationProperties { get; set; }
         
-    public Message(AzureMessage azureMessage, bool isDlq)
+    public Message(ServiceBusReceivedMessage azureMessage, bool isDlq)
     {
-        this.Content = azureMessage.Body is not null ? Encoding.UTF8.GetString(azureMessage.Body) : string.Empty;
+        this.Content = azureMessage.Body != null ? azureMessage.Body.ToString() : string.Empty;
         this.MessageId = azureMessage.MessageId;
         this.CorrelationId = azureMessage.CorrelationId;
-        this.DeliveryCount = azureMessage.SystemProperties.DeliveryCount;
+        this.DeliveryCount = azureMessage.DeliveryCount;
         this.ContentType = azureMessage.ContentType;
-        this.Label = azureMessage.Label;
-        this.SequenceNumber = azureMessage.SystemProperties.SequenceNumber;
-        this.Size = azureMessage.Size;
+        this.Label = azureMessage.Subject;
+        this.SequenceNumber = azureMessage.SequenceNumber;
+        this.Size = azureMessage.Body != null ? azureMessage.Body.ToArray().Length : 0;
         this.TimeToLive = azureMessage.TimeToLive;
         this.IsDlq = isDlq;
-        this.EnqueueTimeUtc = azureMessage.SystemProperties.EnqueuedTimeUtc;
-        this.ApplicationProperties = azureMessage.UserProperties;
-        this.DeadLetterReason = azureMessage.UserProperties.ContainsKey("DeadLetterReason")
-            ? azureMessage.UserProperties["DeadLetterReason"].ToString()
+        this.EnqueueTimeUtc = azureMessage.EnqueuedTime;
+        this.ApplicationProperties = azureMessage.ApplicationProperties;
+        this.DeadLetterReason = azureMessage.ApplicationProperties.ContainsKey("DeadLetterReason")
+            ? azureMessage.ApplicationProperties["DeadLetterReason"].ToString()
             : string.Empty;
     }
 }

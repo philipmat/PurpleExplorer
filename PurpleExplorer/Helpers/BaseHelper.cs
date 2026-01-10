@@ -1,8 +1,7 @@
 ﻿using System;
-using Microsoft.Azure.ServiceBus;
-using Microsoft.Azure.ServiceBus.Core;
-using Microsoft.Azure.ServiceBus.Management;
-using Microsoft.Azure.ServiceBus.Primitives;
+using Azure.Identity;
+using Azure.Messaging.ServiceBus;
+using Azure.Messaging.ServiceBus.Administration;
 using PurpleExplorer.Models;
 
 namespace PurpleExplorer.Helpers;
@@ -11,49 +10,48 @@ public abstract class BaseHelper
 {
     protected const int MaxRequestItemsPerPage = 100;
 
-    protected ManagementClient GetManagementClient(ServiceBusConnectionString connectionString)
+    protected ServiceBusAdministrationClient GetManagementClient(ServiceBusConnectionString connectionString)
     {
         if (connectionString.UseManagedIdentity)
         {
-            var tokenProvider = GetTokenProvider(connectionString);
-            return new ManagementClient(connectionString.ConnectionString, tokenProvider);
+            return new ServiceBusAdministrationClient(connectionString.ConnectionString, new DefaultAzureCredential());
         }
         else
         {
-            return new ManagementClient(connectionString.ConnectionString);
+            return new ServiceBusAdministrationClient(connectionString.ConnectionString);
         }
     }
 
-    private TokenProvider GetTokenProvider(ServiceBusConnectionString connectionString)
+    protected ServiceBusReceiver GetMessageReceiver(ServiceBusConnectionString connectionString, string path, ServiceBusReceiveMode receiveMode)
+    {
+        var client = GetServiceBusClient(connectionString);
+        return client.CreateReceiver(path, new ServiceBusReceiverOptions()
+        {
+            ReceiveMode = receiveMode
+        });
+    }
+
+    protected ServiceBusSender GetTopicClient(ServiceBusConnectionString connectionString, string path)
+    {
+        var client = GetServiceBusClient(connectionString);
+        return client.CreateSender(path);
+    }
+
+    protected ServiceBusSender GetQueueClient(ServiceBusConnectionString connectionString, string queueName)
+    {
+        var client = GetServiceBusClient(connectionString);
+        return client.CreateSender(queueName);
+    }
+
+    protected ServiceBusClient GetServiceBusClient(ServiceBusConnectionString connectionString)
     {
         if (connectionString.UseManagedIdentity)
         {
-            return TokenProvider.CreateManagedIdentityTokenProvider();
+            return new ServiceBusClient(connectionString.ConnectionString, new DefaultAzureCredential());
         }
         else
         {
-            throw new NotImplementedException("Unknown token provider.");
+            return new ServiceBusClient(connectionString.ConnectionString);
         }
-    }
-
-    protected MessageReceiver GetMessageReceiver(ServiceBusConnectionString connectionString, string path, ReceiveMode receiveMode)
-    {
-        return connectionString.UseManagedIdentity
-            ? new MessageReceiver(connectionString.ConnectionString, path, GetTokenProvider(connectionString), receiveMode: receiveMode)
-            : new MessageReceiver(connectionString.ConnectionString, path, receiveMode);
-    }
-
-    protected TopicClient GetTopicClient(ServiceBusConnectionString connectionString, string path)
-    {
-        return connectionString.UseManagedIdentity
-            ? new TopicClient(connectionString.ConnectionString, path, GetTokenProvider(connectionString))
-            : new TopicClient(connectionString.ConnectionString, path);
-    }
-
-    protected QueueClient GetQueueClient(ServiceBusConnectionString connectionString, string queueName)
-    {
-        return connectionString.UseManagedIdentity
-            ? new QueueClient(connectionString.ConnectionString, queueName, GetTokenProvider(connectionString))
-            : new QueueClient(connectionString.ConnectionString, queueName);
     }
 }

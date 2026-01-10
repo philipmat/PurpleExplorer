@@ -6,7 +6,7 @@ namespace PurpleExplorer.Models;
 public class ServiceBusResource 
 {
     public string Name { get; set; }
-    public DateTime CreatedTime { get; set; }
+    public DateTimeOffset CreatedTime { get; set; }
     public ServiceBusConnectionString ConnectionString { get; set; }
     public ObservableCollection<ServiceBusQueue> Queues { get; private set; }
     public ObservableCollection<ServiceBusTopic> Topics { get; private set; }

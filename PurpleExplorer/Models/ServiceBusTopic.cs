@@ -1,5 +1,5 @@
 using System.Collections.ObjectModel;
-using Microsoft.Azure.ServiceBus.Management;
+using Azure.Messaging.ServiceBus.Administration;
 
 namespace PurpleExplorer.Models;
 
@@ -13,9 +13,9 @@ public class ServiceBusTopic
     {
     }
 
-    public ServiceBusTopic(TopicDescription topicDescription)
+    public ServiceBusTopic(TopicProperties topicDescription)
     {
-        Name = topicDescription.Path;
+        Name = topicDescription.Name;
     }
 
 

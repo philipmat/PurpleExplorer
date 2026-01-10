@@ -2,7 +2,7 @@
 using System.Threading.Tasks;
 using PurpleExplorer.Models;
 using Message = PurpleExplorer.Models.Message;
-using AzureMessage = Microsoft.Azure.ServiceBus.Message;
+using AzureMessage = Azure.Messaging.ServiceBus.ServiceBusMessage;
 
 namespace PurpleExplorer.Helpers;
 

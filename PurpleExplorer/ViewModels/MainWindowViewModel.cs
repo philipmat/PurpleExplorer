@@ -11,7 +11,7 @@ using PurpleExplorer.Views;
 using ReactiveUI;
 using System.Threading.Tasks;
 using MsBox.Avalonia.Enums;
-using Microsoft.Azure.ServiceBus;
+using Azure.Messaging.ServiceBus;
 using PurpleExplorer.Services;
 using Splat;
 using Message = PurpleExplorer.Models.Message;
@@ -264,7 +264,7 @@ public class MainWindowViewModel : ViewModelBase
             await MessageBoxHelper.ShowError("The connection string is invalid.");
             LoggingService.Log("Connection failed: The connection string is invalid");
         }
-        catch (UnauthorizedException)
+        catch (ServiceBusException ex) when (ex.Reason == ServiceBusFailureReason.GeneralError && ex.Message.Contains("unauthorized", StringComparison.OrdinalIgnoreCase))
         {
             await MessageBoxHelper.ShowError("Unable to connect to Service Bus; unauthorized.");
             LoggingService.Log("Connection failed: Unauthorized");

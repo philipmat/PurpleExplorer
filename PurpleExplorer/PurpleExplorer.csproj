@@ -26,7 +26,9 @@
         <PackageReference Include="Avalonia.Themes.Fluent" Version="11.3.10" />
         <PackageReference Include="Avalonia.ReactiveUI" Version="11.3.8" />
         <PackageReference Include="MessageBox.Avalonia" Version="3.3.1.1" />
-        <PackageReference Include="Microsoft.Azure.ServiceBus" Version="5.2.0" />
+        <PackageReference Include="Azure.Messaging.ServiceBus" Version="7.20.1" />
+        <PackageReference Include="Azure.Identity" Version="1.11.4" />
+        <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
         <PackageReference Include="Projektanker.Icons.Avalonia" Version="9.6.2" />
         <PackageReference Include="Projektanker.Icons.Avalonia.FontAwesome" Version="9.6.2" />
         <PackageReference Include="Projektanker.Icons.Avalonia.MaterialDesign" Version="9.6.2" />
