@@ -44,7 +44,7 @@
             </StackPanel>
         </DockPanel>
 
-        <ListBox Grid.Row="4" Name="lsbSavedConnectionString" Margin="5,0,5,0"
+        <ListBox Grid.Row="4" Name="SavedConnectionStringListBox" Margin="5,0,5,0"
                  ItemsSource="{Binding Path=SavedConnectionStrings, Mode=TwoWay}"
                  Width="600" Height="300" VerticalAlignment="Top"
                  SelectionChanged="lsbConnectionStringSelectionChanged" HorizontalAlignment="Left"
@@ -60,7 +60,7 @@
             </ListBox.ItemTemplate>
         </ListBox>
         <Button Grid.Row="5" Width="200" Height="30" Margin="5,0,5,0" HorizontalAlignment="Left"
-                IsEnabled="{Binding #lsbSavedConnectionString.SelectedItem, Converter={x:Static ObjectConverters.IsNotNull}}"
+                IsEnabled="{Binding #SavedConnectionStringListBox.SelectedItem, Converter={x:Static ObjectConverters.IsNotNull}}"
                 VerticalAlignment="Top"
                 Click="btnDeleteConnectionString">
             <StackPanel Orientation="Horizontal" Spacing="5">
