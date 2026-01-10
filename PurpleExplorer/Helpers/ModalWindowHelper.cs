@@ -1,8 +1,8 @@
-﻿using Avalonia;
+﻿using System.Threading.Tasks;
+using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Controls.ApplicationLifetimes;
 using PurpleExplorer.ViewModels;
-using System.Threading.Tasks;
 
 namespace PurpleExplorer.Helpers;
 
@@ -10,9 +10,10 @@ public static class ModalWindowHelper
 {
     public static async Task ShowModalWindow<T>(ViewModelBase viewModel) where T : Window, new()
     {
-        var mainWindow = (Application.Current.ApplicationLifetime as IClassicDesktopStyleApplicationLifetime)
+        Window? mainWindow = (Application.Current?.ApplicationLifetime as IClassicDesktopStyleApplicationLifetime)?
             .Windows[0];
 
+        if (mainWindow == null) return;
         var window = new T
         {
             DataContext = viewModel
@@ -20,20 +21,23 @@ public static class ModalWindowHelper
 
         await window.ShowDialog(mainWindow);
     }
-        
-    public static async Task<U> ShowModalWindow<T, U>(ViewModelBase viewModel) where T : Window, new() where U : ViewModelBase
+
+    public static async Task<TVm?> ShowModalWindow<TW, TVm>(ViewModelBase viewModel)
+        where TW : Window, new() where TVm : ViewModelBase
     {
-        var mainWindow = (Application.Current.ApplicationLifetime as IClassicDesktopStyleApplicationLifetime)
+        Window? mainWindow = (Application.Current?.ApplicationLifetime as IClassicDesktopStyleApplicationLifetime)?
             .Windows[0];
 
-        var window = new T
+        if (mainWindow == null) return null;
+
+        var window = new TW
         {
             DataContext = viewModel
         };
 
         await window.ShowDialog(mainWindow);
-        // focus window so the key bindings of that window work
+        // focus the window so the key bindings of that window work
         window.Focus();
-        return window.DataContext as U;
+        return window.DataContext as TVm;
     }
 }

@@ -14,10 +14,7 @@ namespace PurpleExplorer;
 
 public class App : Application
 {
-    public override void Initialize()
-    {
-        AvaloniaXamlLoader.Load(this);
-    }
+    public override void Initialize() => AvaloniaXamlLoader.Load(this);
 
     public override void OnFrameworkInitializationCompleted()
     {
@@ -27,7 +24,7 @@ public class App : Application
         {
             if (File.Exists("appstate.json.backup"))
             {
-               File.Copy("appstate.json.backup", "appstate.json"); 
+               File.Copy("appstate.json.backup", "appstate.json");
             }
             else
             {
@@ -35,25 +32,23 @@ public class App : Application
             }
         }
         //*/
-            
-        var suspension = new AutoSuspendHelper(ApplicationLifetime!);
+
+        AutoSuspendHelper suspension = new(ApplicationLifetime!);
         RxApp.SuspensionHost.CreateNewAppState = () => new AppState();
         RxApp.SuspensionHost.SetupDefaultSuspendResume(new NewtonsoftJsonSuspensionDriver(appStatePath));
         suspension.OnFrameworkInitializationCompleted();
-        var state = RxApp.SuspensionHost.GetAppState<AppState>();
+        AppState state = RxApp.SuspensionHost.GetAppState<AppState>();
 
-        Locator.CurrentMutable.RegisterLazySingleton(() => state!, typeof(IAppState));
+        Locator.CurrentMutable.RegisterLazySingleton(() => state, typeof(IAppState));
         Locator.CurrentMutable.RegisterLazySingleton(() => new LoggingService(), typeof(ILoggingService));
-        Locator.CurrentMutable.Register(() => new TopicHelper(state!.AppSettings), typeof(ITopicHelper));
-        Locator.CurrentMutable.Register(() => new QueueHelper(state!.AppSettings), typeof(IQueueHelper));
+        Locator.CurrentMutable.Register(() => new TopicHelper(state.AppSettings), typeof(ITopicHelper));
+        Locator.CurrentMutable.Register(() => new QueueHelper(state.AppSettings), typeof(IQueueHelper));
 
         if (ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
-        {
             desktop.MainWindow = new MainWindow
             {
                 DataContext = new MainWindowViewModel()
             };
-        }
 
         base.OnFrameworkInitializationCompleted();
     }

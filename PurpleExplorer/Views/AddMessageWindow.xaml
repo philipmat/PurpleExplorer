@@ -28,7 +28,7 @@
         <StackPanel Grid.Row="1" Margin="0,5,0,5" Orientation="Horizontal" HorizontalAlignment="Stretch">
             <Button MinWidth="200" Height="30" HorizontalAlignment="Stretch" VerticalAlignment="Center"
                     IsEnabled="{Binding Message, Converter={x:Static StringConverters.IsNotNullOrEmpty}}"
-                    Click="btnAddClick">
+                    Click="BtnAddClick">
                 Send
             </Button>
             <Button MinWidth="200" Height="30" Margin="5,0,5,0" HorizontalAlignment="Stretch"
@@ -46,9 +46,9 @@
                      IsEnabled="{Binding Message, Converter={x:Static StringConverters.IsNotNullOrEmpty}}"
                      TextWrapping="Wrap" Text="{Binding Path=Title, Mode=TwoWay}" Watermark="Save message with title:" />
         </StackPanel>
-        
+
         <DataGrid Grid.Row="2" Name="dgSavedMessages" ItemsSource="{Binding Path=SavedMessages, Mode=TwoWay}"
-                  SelectionChanged="messageSelectionChanged"
+                  SelectionChanged="MessageSelectionChanged"
                   IsReadOnly="True">
             <DataGrid.Columns>
                 <DataGridTextColumn Header="Title" Binding="{Binding Title}" />
@@ -57,7 +57,7 @@
 
         <Button Grid.Row="3" Width="200" Height="30" Margin="0,5,0,0" HorizontalAlignment="Left"
                 VerticalAlignment="Center"
-                Click="btnDeleteMessage">
+                Click="BtnDeleteMessage">
             Remove
         </Button>
     </Grid>

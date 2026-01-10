@@ -14,16 +14,14 @@ public class AddMessageWindow : Window
         InitializeComponent();
     }
 
-    private void InitializeComponent()
+    // TODO: catch exceptions inside the method and log to console
+    public async void BtnAddClick(object? sender, RoutedEventArgs e)
     {
-        AvaloniaXamlLoader.Load(this);
-    }
-
-    public async void btnAddClick(object sender, RoutedEventArgs e)
-    {
-        var dataContext = DataContext as AddMessageWindowViewModal;
+        if (DataContext is not AddMessageWindowViewModal dataContext) return;
         if (string.IsNullOrEmpty(dataContext.Message))
+        {
             await MessageBoxHelper.ShowError("Please enter a message to be sent");
+        }
         else
         {
             dataContext.Cancel = false;
@@ -31,19 +29,24 @@ public class AddMessageWindow : Window
         }
     }
 
-    public void btnDeleteMessage(object sender, RoutedEventArgs e)
+    public void BtnDeleteMessage(object sender, RoutedEventArgs e)
     {
-        var dataContext = DataContext as AddMessageWindowViewModal;
+        if (DataContext is not AddMessageWindowViewModal dataContext) return;
         var dataGrid = this.FindControl<DataGrid>("dgSavedMessages");
-        dataContext.SavedMessages.Remove(dataGrid.SelectedItem as SavedMessage);
+        if (dataGrid?.SelectedItem == null) return;
+        dataContext.SavedMessages.Remove((SavedMessage)dataGrid.SelectedItem);
     }
 
-    public void messageSelectionChanged(object sender, SelectionChangedEventArgs e)
+    public void MessageSelectionChanged(object sender, SelectionChangedEventArgs e)
     {
-        var dataContext = DataContext as AddMessageWindowViewModal;
-        var dataGrid = sender as DataGrid;
-        var selectedMessage = dataGrid.SelectedItem as SavedMessage;
-        dataContext.Message = selectedMessage?.Message;
-        dataContext.Title = selectedMessage?.Title;
+        if (DataContext is not AddMessageWindowViewModal dataContext) return;
+        if (sender is not DataGrid dataGrid) return;
+
+        if (dataGrid.SelectedItem is not SavedMessage selectedMessage) return;
+
+        dataContext.Message = selectedMessage.Message;
+        dataContext.Title = selectedMessage.Title;
     }
+
+    private void InitializeComponent() => AvaloniaXamlLoader.Load(this);
 }

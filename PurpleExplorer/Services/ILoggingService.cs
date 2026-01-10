@@ -2,6 +2,6 @@
 
 public interface ILoggingService
 {
-    void Log(string message);
     string Logs { get; }
+    void Log(string message);
 }

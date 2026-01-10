@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Azure;
 using Azure.Messaging.ServiceBus;
 using Azure.Messaging.ServiceBus.Administration;
 using PurpleExplorer.Models;
@@ -10,103 +11,45 @@ using AzureMessage = Azure.Messaging.ServiceBus.ServiceBusMessage;
 
 namespace PurpleExplorer.Helpers;
 
-public class TopicHelper : BaseHelper, ITopicHelper
+public class TopicHelper(AppSettings appSettings) : BaseHelper, ITopicHelper
 {
-    private readonly AppSettings _appSettings;
-
-    public TopicHelper(AppSettings appSettings)
-    {
-        _appSettings = appSettings;
-    }
-
     public async Task<IList<ServiceBusTopic>> GetTopicsAndSubscriptions(ServiceBusConnectionString connectionString)
     {
-        var client = GetManagementClient(connectionString);
-        var topics = await GetTopicsWithSubscriptions(client);
+        ServiceBusAdministrationClient client = GetManagementClient(connectionString);
+        List<ServiceBusTopic> topics = await GetTopicsWithSubscriptions(client);
         return topics;
     }
 
-    private async Task<ServiceBusTopic> CreateTopicWithSubscriptions(ServiceBusAdministrationClient client, TopicProperties topicProperties)
+    public async Task<ServiceBusSubscription> GetSubscription(
+        ServiceBusConnectionString connectionString,
+        string topicPath,
+        string subscriptionName)
     {
-        var topic = new ServiceBusTopic(topicProperties);
-        var subscriptions = await GetSubscriptions(client, topicProperties.Name);
-        topic.AddSubscriptions(subscriptions.ToArray());
-        return topic;
-    }
-
-    private async Task<List<ServiceBusTopic>> GetTopicsWithSubscriptions(ServiceBusAdministrationClient client)
-    {
-        var topicPropertiesList = new List<TopicProperties>();
-        
-        var allTopics = client.GetTopicsAsync();
-        int count = 0;
-        await foreach (var topic in allTopics)
-        {
-            topicPropertiesList.Add(topic);
-            count++;
-            if (count >= _appSettings.TopicListFetchCount)
-                break;
-        }
-
-        var topics = await Task.WhenAll(topicPropertiesList
-            .Select(async topic => await CreateTopicWithSubscriptions(client, topic)));
-        return topics.ToList();
-    }
-
-    public async Task<ServiceBusTopic> GetTopic(ServiceBusConnectionString connectionString, string topicPath,
-        bool retrieveSubscriptions)
-    {
-        var client = GetManagementClient(connectionString);
-        var busTopic = await client.GetTopicAsync(topicPath);
-        var newTopic = new ServiceBusTopic(busTopic.Value);
-
-        if (retrieveSubscriptions)
-        {
-            var subscriptions = await GetSubscriptions(client, newTopic.Name);
-            newTopic.AddSubscriptions(subscriptions.ToArray());
-        }
-        
-        return newTopic;
-    }
-
-    public async Task<ServiceBusSubscription> GetSubscription(ServiceBusConnectionString connectionString,
-        string topicPath, string subscriptionName)
-    {
-        var client = GetManagementClient(connectionString);
-        var runtimeInfo = await client.GetSubscriptionRuntimePropertiesAsync(topicPath, subscriptionName);
+        ServiceBusAdministrationClient client = GetManagementClient(connectionString);
+        Response<SubscriptionRuntimeProperties>? runtimeInfo =
+            await client.GetSubscriptionRuntimePropertiesAsync(topicPath, subscriptionName);
 
         return new ServiceBusSubscription(runtimeInfo.Value);
     }
 
-    private async Task<IList<ServiceBusSubscription>> GetSubscriptions(
-        ServiceBusAdministrationClient client,
-        string topicPath)
-    {
-        IList<ServiceBusSubscription> subscriptions = new List<ServiceBusSubscription>();
-        var topicSubscriptions = client.GetSubscriptionsRuntimePropertiesAsync(topicPath);
-
-        await foreach (var sub in topicSubscriptions)
-        {
-            subscriptions.Add(new ServiceBusSubscription(sub));
-        }
-
-        return subscriptions;
-    }
-
-    public async Task<IList<Message>> GetMessagesBySubscription(ServiceBusConnectionString connectionString,
+    public async Task<IList<Message>> GetMessagesBySubscription(
+        ServiceBusConnectionString connectionString,
         string topicName,
         string subscriptionName)
     {
-        await using var client = GetServiceBusClient(connectionString);
-        var messageReceiver = client.CreateReceiver(topicName, subscriptionName, new ServiceBusReceiverOptions()
-        {
-            ReceiveMode = ServiceBusReceiveMode.PeekLock
-        });
-        
+        await using ServiceBusClient client = GetServiceBusClient(connectionString);
+        ServiceBusReceiver? messageReceiver = client.CreateReceiver(
+            topicName,
+            subscriptionName,
+            new ServiceBusReceiverOptions
+            {
+                ReceiveMode = ServiceBusReceiveMode.PeekLock
+            });
+
         IReadOnlyList<ServiceBusReceivedMessage> subscriptionMessages = new List<ServiceBusReceivedMessage>();
         try
         {
-            subscriptionMessages = await messageReceiver.PeekMessagesAsync(_appSettings.TopicMessageFetchCount);
+            subscriptionMessages = await messageReceiver.PeekMessagesAsync(appSettings.TopicMessageFetchCount);
         }
         catch (ServiceBusException ex)
         {
@@ -117,22 +60,26 @@ public class TopicHelper : BaseHelper, ITopicHelper
         return result;
     }
 
-    public async Task<IList<Message>> GetDlqMessages(ServiceBusConnectionString connectionString, string topic,
+    public async Task<IList<Message>> GetDlqMessages(
+        ServiceBusConnectionString connectionString,
+        string topic,
         string subscription)
     {
         var path = $"{topic}/Subscriptions/{subscription}";
-        var deadletterPath = $"{path}/$DeadLetterQueue";
+        var deadLetterPath = $"{path}/$DeadLetterQueue";
 
-        await using var client = GetServiceBusClient(connectionString);
-        var receiver = client.CreateReceiver(deadletterPath, new ServiceBusReceiverOptions()
-        {
-            ReceiveMode = ServiceBusReceiveMode.PeekLock
-        });
-        
+        await using ServiceBusClient client = GetServiceBusClient(connectionString);
+        ServiceBusReceiver? receiver = client.CreateReceiver(
+            deadLetterPath,
+            new ServiceBusReceiverOptions
+            {
+                ReceiveMode = ServiceBusReceiveMode.PeekLock
+            });
+
         IReadOnlyList<ServiceBusReceivedMessage> receivedMessages = new List<ServiceBusReceivedMessage>();
         try
         {
-            receivedMessages = await receiver.PeekMessagesAsync(_appSettings.TopicMessageFetchCount);
+            receivedMessages = await receiver.PeekMessagesAsync(appSettings.TopicMessageFetchCount);
         }
         catch (ServiceBusException ex)
         {
@@ -145,8 +92,8 @@ public class TopicHelper : BaseHelper, ITopicHelper
 
     public async Task<NamespaceProperties> GetNamespaceInfo(ServiceBusConnectionString connectionString)
     {
-        var client = GetManagementClient(connectionString);
-        var result = await client.GetNamespacePropertiesAsync();
+        ServiceBusAdministrationClient client = GetManagementClient(connectionString);
+        Response<NamespaceProperties>? result = await client.GetNamespacePropertiesAsync();
         return result.Value;
     }
 
@@ -158,33 +105,37 @@ public class TopicHelper : BaseHelper, ITopicHelper
 
     public async Task SendMessage(ServiceBusConnectionString connectionString, string topicPath, AzureMessage message)
     {
-        await using var client = GetServiceBusClient(connectionString);
-        var sender = client.CreateSender(topicPath);
+        await using ServiceBusClient client = GetServiceBusClient(connectionString);
+        ServiceBusSender? sender = client.CreateSender(topicPath);
         await sender.SendMessageAsync(message);
     }
 
-    public async Task DeleteMessage(ServiceBusConnectionString connectionString, string topicPath,
+    public async Task DeleteMessage(
+        ServiceBusConnectionString connectionString,
+        string topicPath,
         string subscriptionPath,
-        Message message, bool isDlq)
+        Message message,
+        bool isDlq)
     {
         var path = $"{topicPath}/Subscriptions/{subscriptionPath}";
         path = isDlq ? $"{path}/$DeadLetterQueue" : path;
 
-        await using var client = GetServiceBusClient(connectionString);
-        var receiver = client.CreateReceiver(path, new ServiceBusReceiverOptions()
-        {
-            ReceiveMode = ServiceBusReceiveMode.PeekLock
-        });
+        await using ServiceBusClient client = GetServiceBusClient(connectionString);
+        ServiceBusReceiver? receiver = client.CreateReceiver(
+            path,
+            new ServiceBusReceiverOptions
+            {
+                ReceiveMode = ServiceBusReceiveMode.PeekLock
+            });
 
         while (true)
         {
-            var messages = await receiver.ReceiveMessagesAsync(_appSettings.TopicMessageFetchCount);
-            if (messages == null || messages.Count == 0)
-            {
-                break;
-            }
+            IReadOnlyList<ServiceBusReceivedMessage>? messages =
+                await receiver.ReceiveMessagesAsync(appSettings.TopicMessageFetchCount);
+            if (messages == null || messages.Count == 0) break;
 
-            var foundMessage = messages.FirstOrDefault(m => m.MessageId.Equals(message.MessageId));
+            ServiceBusReceivedMessage? foundMessage =
+                messages.FirstOrDefault(m => m.MessageId.Equals(message.MessageId));
             if (foundMessage != null)
             {
                 await receiver.CompleteMessageAsync(foundMessage);
@@ -193,7 +144,9 @@ public class TopicHelper : BaseHelper, ITopicHelper
         }
     }
 
-    public async Task<long> PurgeMessages(ServiceBusConnectionString connectionString, string topicPath,
+    public async Task<long> PurgeMessages(
+        ServiceBusConnectionString connectionString,
+        string topicPath,
         string subscriptionPath,
         bool isDlq)
     {
@@ -201,19 +154,20 @@ public class TopicHelper : BaseHelper, ITopicHelper
         path = isDlq ? $"{path}/$DeadLetterQueue" : path;
 
         long purgedCount = 0;
-        await using var client = GetServiceBusClient(connectionString);
-        var receiver = client.CreateReceiver(path, new ServiceBusReceiverOptions()
-        {
-            ReceiveMode = ServiceBusReceiveMode.ReceiveAndDelete
-        });
-        var operationTimeout = TimeSpan.FromSeconds(5);
+        await using ServiceBusClient client = GetServiceBusClient(connectionString);
+        ServiceBusReceiver? receiver = client.CreateReceiver(
+            path,
+            new ServiceBusReceiverOptions
+            {
+                ReceiveMode = ServiceBusReceiveMode.ReceiveAndDelete
+            });
+        TimeSpan operationTimeout = TimeSpan.FromSeconds(5);
         while (true)
         {
-            var messages = await receiver.ReceiveMessagesAsync(_appSettings.TopicMessageFetchCount, operationTimeout);
-            if (messages == null || messages.Count == 0)
-            {
-                break;
-            }
+            IReadOnlyList<ServiceBusReceivedMessage>? messages = await receiver.ReceiveMessagesAsync(
+                appSettings.TopicMessageFetchCount,
+                operationTimeout);
+            if (messages == null || messages.Count == 0) break;
 
             purgedCount += messages.Count;
         }
@@ -221,29 +175,32 @@ public class TopicHelper : BaseHelper, ITopicHelper
         return purgedCount;
     }
 
-    public async Task<long> TransferDlqMessages(ServiceBusConnectionString connectionString, string topicPath,
+    public async Task<long> TransferDlqMessages(
+        ServiceBusConnectionString connectionString,
+        string topicPath,
         string subscriptionPath)
     {
         var path = $"{topicPath}/Subscriptions/{subscriptionPath}/$DeadLetterQueue";
 
         long transferredCount = 0;
-        await using var client = GetServiceBusClient(connectionString);
-        var receiver = client.CreateReceiver(path, new ServiceBusReceiverOptions()
-        {
-            ReceiveMode = ServiceBusReceiveMode.ReceiveAndDelete
-        });
-        var sender = client.CreateSender(topicPath);
-        
-        var operationTimeout = TimeSpan.FromSeconds(5);
+        await using ServiceBusClient client = GetServiceBusClient(connectionString);
+        ServiceBusReceiver? receiver = client.CreateReceiver(
+            path,
+            new ServiceBusReceiverOptions
+            {
+                ReceiveMode = ServiceBusReceiveMode.ReceiveAndDelete
+            });
+        ServiceBusSender? sender = client.CreateSender(topicPath);
+
+        TimeSpan operationTimeout = TimeSpan.FromSeconds(5);
         while (true)
         {
-            var messages = await receiver.ReceiveMessagesAsync(_appSettings.TopicMessageFetchCount, operationTimeout);
-            if (messages == null || messages.Count == 0)
-            {
-                break;
-            }
+            IReadOnlyList<ServiceBusReceivedMessage>? messages = await receiver.ReceiveMessagesAsync(
+                appSettings.TopicMessageFetchCount,
+                operationTimeout);
+            if (messages == null || messages.Count == 0) break;
 
-            var messagesToSend = messages.Select(m => new AzureMessage(m));
+            IEnumerable<AzureMessage> messagesToSend = messages.Select(m => new AzureMessage(m));
             await sender.SendMessagesAsync(messagesToSend);
 
             transferredCount += messages.Count;
@@ -252,27 +209,16 @@ public class TopicHelper : BaseHelper, ITopicHelper
         return transferredCount;
     }
 
-    private async Task<ServiceBusReceivedMessage> PeekDlqMessageBySequenceNumber(ServiceBusConnectionString connectionString,
+    public async Task ResubmitDlqMessage(
+        ServiceBusConnectionString connectionString,
         string topicPath,
-        string subscriptionPath, long sequenceNumber)
-    {
-        var path = $"{topicPath}/Subscriptions/{subscriptionPath}/$DeadLetterQueue";
-
-        await using var client = GetServiceBusClient(connectionString);
-        var receiver = client.CreateReceiver(path, new ServiceBusReceiverOptions()
-        {
-            ReceiveMode = ServiceBusReceiveMode.PeekLock
-        });
-        var azureMessage = await receiver.PeekMessageAsync(sequenceNumber);
-
-        return azureMessage;
-    }
-
-    public async Task ResubmitDlqMessage(ServiceBusConnectionString connectionString, string topicPath,
         string subscriptionPath,
         Message message)
     {
-        var azureMessage = await PeekDlqMessageBySequenceNumber(connectionString, topicPath, subscriptionPath,
+        ServiceBusReceivedMessage azureMessage = await PeekDlqMessageBySequenceNumber(
+            connectionString,
+            topicPath,
+            subscriptionPath,
             message.SequenceNumber);
         var clonedMessage = new AzureMessage(azureMessage);
 
@@ -281,32 +227,117 @@ public class TopicHelper : BaseHelper, ITopicHelper
         await DeleteMessage(connectionString, topicPath, subscriptionPath, message, true);
     }
 
-    public async Task DeadletterMessage(ServiceBusConnectionString connectionString, string topicPath,
+    public async Task DeadLetterMessage(
+        ServiceBusConnectionString connectionString,
+        string topicPath,
         string subscriptionPath,
         Message message)
     {
         var path = $"{topicPath}/Subscriptions/{subscriptionPath}";
 
-        await using var client = GetServiceBusClient(connectionString);
-        var receiver = client.CreateReceiver(path, new ServiceBusReceiverOptions()
-        {
-            ReceiveMode = ServiceBusReceiveMode.PeekLock
-        });
+        await using ServiceBusClient client = GetServiceBusClient(connectionString);
+        ServiceBusReceiver? receiver = client.CreateReceiver(
+            path,
+            new ServiceBusReceiverOptions
+            {
+                ReceiveMode = ServiceBusReceiveMode.PeekLock
+            });
 
         while (true)
         {
-            var messages = await receiver.ReceiveMessagesAsync(_appSettings.TopicMessageFetchCount);
-            if (messages == null || messages.Count == 0)
-            {
-                break;
-            }
+            IReadOnlyList<ServiceBusReceivedMessage>? messages =
+                await receiver.ReceiveMessagesAsync(appSettings.TopicMessageFetchCount);
+            if (messages == null || messages.Count == 0) break;
 
-            var foundMessage = messages.FirstOrDefault(m => m.MessageId.Equals(message.MessageId));
+            ServiceBusReceivedMessage? foundMessage =
+                messages.FirstOrDefault(m => m.MessageId.Equals(message.MessageId));
             if (foundMessage != null)
             {
                 await receiver.DeadLetterMessageAsync(foundMessage);
                 break;
             }
         }
+    }
+
+    private async Task<ServiceBusTopic> CreateTopicWithSubscriptions(
+        ServiceBusAdministrationClient client,
+        TopicProperties topicProperties)
+    {
+        var topic = new ServiceBusTopic(topicProperties);
+        IList<ServiceBusSubscription> subscriptions = await GetSubscriptions(client, topicProperties.Name);
+        topic.AddSubscriptions(subscriptions.ToArray());
+        return topic;
+    }
+
+    private async Task<List<ServiceBusTopic>> GetTopicsWithSubscriptions(ServiceBusAdministrationClient client)
+    {
+        var topicPropertiesList = new List<TopicProperties>();
+
+        AsyncPageable<TopicProperties>? allTopics = client.GetTopicsAsync();
+        var count = 0;
+        await foreach (TopicProperties topic in allTopics)
+        {
+            topicPropertiesList.Add(topic);
+            count++;
+            if (count >= appSettings.TopicListFetchCount)
+                break;
+        }
+
+        ServiceBusTopic[] topics = await Task.WhenAll(
+            topicPropertiesList
+                .Select(async topic => await CreateTopicWithSubscriptions(client, topic)));
+        return topics.ToList();
+    }
+
+    public async Task<ServiceBusTopic> GetTopic(
+        ServiceBusConnectionString connectionString,
+        string topicPath,
+        bool retrieveSubscriptions)
+    {
+        ServiceBusAdministrationClient client = GetManagementClient(connectionString);
+        Response<TopicProperties>? busTopic = await client.GetTopicAsync(topicPath);
+        var newTopic = new ServiceBusTopic(busTopic.Value);
+
+        if (retrieveSubscriptions)
+        {
+            IList<ServiceBusSubscription> subscriptions = await GetSubscriptions(client, newTopic.Name);
+            newTopic.AddSubscriptions(subscriptions.ToArray());
+        }
+
+        return newTopic;
+    }
+
+    private async Task<IList<ServiceBusSubscription>> GetSubscriptions(
+        ServiceBusAdministrationClient client,
+        string topicPath)
+    {
+        IList<ServiceBusSubscription> subscriptions = new List<ServiceBusSubscription>();
+        AsyncPageable<SubscriptionRuntimeProperties>? topicSubscriptions =
+            client.GetSubscriptionsRuntimePropertiesAsync(topicPath);
+
+        await foreach (SubscriptionRuntimeProperties sub in topicSubscriptions)
+            subscriptions.Add(new ServiceBusSubscription(sub));
+
+        return subscriptions;
+    }
+
+    private async Task<ServiceBusReceivedMessage> PeekDlqMessageBySequenceNumber(
+        ServiceBusConnectionString connectionString,
+        string topicPath,
+        string subscriptionPath,
+        long sequenceNumber)
+    {
+        var path = $"{topicPath}/Subscriptions/{subscriptionPath}/$DeadLetterQueue";
+
+        await using ServiceBusClient client = GetServiceBusClient(connectionString);
+        ServiceBusReceiver? receiver = client.CreateReceiver(
+            path,
+            new ServiceBusReceiverOptions
+            {
+                ReceiveMode = ServiceBusReceiveMode.PeekLock
+            });
+        ServiceBusReceivedMessage? azureMessage = await receiver.PeekMessageAsync(sequenceNumber);
+
+        return azureMessage;
     }
 }

@@ -1,39 +1,33 @@
-﻿using Newtonsoft.Json;
-using ReactiveUI;
-using System;
+﻿using System;
 using System.IO;
 using System.Reactive;
 using System.Reactive.Linq;
+using Newtonsoft.Json;
+using ReactiveUI;
 
 namespace PurpleExplorer.Services;
 
-public class NewtonsoftJsonSuspensionDriver : ISuspensionDriver
+public class NewtonsoftJsonSuspensionDriver(string file) : ISuspensionDriver
 {
-    private readonly string _file;
-    private readonly JsonSerializerSettings _settings = new JsonSerializerSettings
+    private readonly JsonSerializerSettings _settings = new()
     {
         TypeNameHandling = TypeNameHandling.All,
         Formatting = Formatting.Indented
     };
 
-    public NewtonsoftJsonSuspensionDriver(string file) => _file = file;
-
     public IObservable<Unit> InvalidateState()
     {
-        if (File.Exists(_file))
+        if (File.Exists(file))
         {
-            var initial = Console.ForegroundColor;
+            ConsoleColor initial = Console.ForegroundColor;
             Console.ForegroundColor = ConsoleColor.Red;
-            Console.WriteLine($"Detected invalid state. Will move {_file} to {_file}.broken");
+            Console.WriteLine($"Detected invalid state. Will move {file} to {file}.broken");
             Console.ForegroundColor = initial;
 
             try
             {
-                if (File.Exists(_file + ".broken"))
-                {
-                    File.Delete(_file + ".broken");
-                }
-                File.Move(_file, _file + ".broken");
+                if (File.Exists(file + ".broken")) File.Delete(file + ".broken");
+                File.Move(file, file + ".broken");
             }
             catch (Exception ex)
             {
@@ -48,59 +42,48 @@ public class NewtonsoftJsonSuspensionDriver : ISuspensionDriver
     {
         try
         {
-            if (File.Exists(_file))
+            if (File.Exists(file))
             {
-                var lines = File.ReadAllText(_file);
+                string lines = File.ReadAllText(file);
                 var state = JsonConvert.DeserializeObject<object>(lines, _settings);
-                if (state != null)
-                {
-                    return Observable.Return(state);
-                }
+                if (state != null) return Observable.Return(state);
             }
         }
         catch (Exception ex)
         {
-            Console.WriteLine($"Error loading state from {_file}: {ex.Message}");
+            Console.WriteLine($"Error loading state from {file}: {ex.Message}");
         }
 
-        var backupFile = _file + ".backup";
+        string backupFile = file + ".backup";
         if (File.Exists(backupFile))
-        {
             try
             {
                 Console.WriteLine($"Attempting to load state from backup: {backupFile}");
-                var lines = File.ReadAllText(backupFile);
+                string lines = File.ReadAllText(backupFile);
                 var state = JsonConvert.DeserializeObject<object>(lines, _settings);
-                if (state != null)
-                {
-                    return Observable.Return(state);
-                }
+                if (state != null) return Observable.Return(state);
             }
             catch (Exception ex)
             {
                 Console.WriteLine($"Error loading state from backup {backupFile}: {ex.Message}");
             }
-        }
 
-        return Observable.Throw<object>(new FileNotFoundException(_file));
+        return Observable.Throw<object>(new FileNotFoundException(file));
     }
 
     public IObservable<Unit> SaveState(object state)
     {
-        var lines = JsonConvert.SerializeObject(state, _settings);
-        Console.WriteLine($"Saving state: will write {lines.Length} lines to {_file}");
+        string lines = JsonConvert.SerializeObject(state, _settings);
+        Console.WriteLine($"Saving state: will write {lines.Length} lines to {file}");
 
-        var backupFile = _file + ".backup";
-        var tempFile = _file + ".tmp";
+        string backupFile = file + ".backup";
+        string tempFile = file + ".tmp";
 
         try
         {
             File.WriteAllText(tempFile, lines);
-            if (File.Exists(_file))
-            {
-                File.Copy(_file, backupFile, true);
-            }
-            File.Move(tempFile, _file, true);
+            if (File.Exists(file)) File.Copy(file, backupFile, true);
+            File.Move(tempFile, file, true);
         }
         catch (Exception ex)
         {

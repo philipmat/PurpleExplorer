@@ -2,15 +2,11 @@ using Azure.Messaging.ServiceBus.Administration;
 
 namespace PurpleExplorer.Models;
 
-public class ServiceBusSubscription : MessageCollection
+public class ServiceBusSubscription(SubscriptionRuntimeProperties subscription) : MessageCollection(
+    subscription.ActiveMessageCount,
+    subscription.DeadLetterMessageCount)
 {
-    public string Name { get; set; }
-       
-    public ServiceBusTopic Topic { get; set; }
+    public string Name { get; set; } = subscription.SubscriptionName;
 
-    public ServiceBusSubscription(SubscriptionRuntimeProperties subscription)
-        : base(subscription.ActiveMessageCount, subscription.DeadLetterMessageCount)
-    {
-        Name = subscription.SubscriptionName;
-    }
+    public ServiceBusTopic? Topic { get; set; }
 }
