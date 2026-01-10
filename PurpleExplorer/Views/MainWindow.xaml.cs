@@ -42,7 +42,7 @@ public class MainWindow : Window
 
         var viewModal = new MessageDetailsWindowViewModel
         {
-            Message = grid.SelectedItem as Message, 
+            CurrentMessage = grid.SelectedItem as Message, 
             ConnectionString = mainWindowViewModel.ConnectionString,
             Subscription = mainWindowViewModel.CurrentSubscription,
             Queue = mainWindowViewModel.CurrentQueue
