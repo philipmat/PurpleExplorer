@@ -10,6 +10,12 @@
         Width="680" Height="630"
         WindowStartupLocation="CenterOwner">
 
+    <Window.KeyBindings>
+        <KeyBinding Gesture="Ctrl+W" Command="{Binding CloseWindowCommand}" CommandParameter="{Binding $parent[Window]}" />
+        <KeyBinding Gesture="Cmd+W" Command="{Binding CloseWindowCommand}" CommandParameter="{Binding $parent[Window]}" />
+        <KeyBinding Gesture="Ctrl+F4" Command="{Binding CloseWindowCommand}" CommandParameter="{Binding $parent[Window]}" />
+    </Window.KeyBindings>
+
     <Design.DataContext>
         <vm:MessageDetailsWindowViewModel />
     </Design.DataContext>
