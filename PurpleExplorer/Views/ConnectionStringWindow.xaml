@@ -17,7 +17,7 @@
 
     <Grid RowDefinitions="Auto,Auto,Auto,Auto,Auto,Auto">
         <Label Grid.Row="0" Margin="5, 5, 0, 0" VerticalAlignment="Bottom">Connection String:</Label>
-        <TextBox Grid.Row="1" Height="30" Width="600" TextWrapping="Wrap" HorizontalAlignment="Left"
+        <TextBox Grid.Row="1" Height="60" Width="600" TextWrapping="Wrap" HorizontalAlignment="Left"
                  Margin="5, 0, 0, 0"
                  VerticalAlignment="Top" Text="{CompiledBinding Path=ConnectionString, Mode=TwoWay}" />
 
