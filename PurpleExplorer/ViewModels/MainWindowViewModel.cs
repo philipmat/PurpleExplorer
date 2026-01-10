@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Reactive;
+using System.Reactive.Linq;
 using System.Collections.ObjectModel;
 using System.Linq;
 using System.Reflection;
@@ -32,7 +34,6 @@ public class MainWindowViewModel : ViewModelBase
     private ServiceBusTopic _currentTopic;
     private ServiceBusQueue _currentQueue;
     private Message _currentMessage;
-    private IObservable<bool> _queueLevelActionEnabled;
     private MessageCollection _currentMessageCollection;
     private IAppState _appState;
     private bool _isBusy;
@@ -144,11 +145,11 @@ public class MainWindowViewModel : ViewModelBase
     public Version AppVersion => Assembly.GetExecutingAssembly().GetName().Version;
     public string AppVersionText { get; set; }
 
-    public IObservable<bool> QueueLevelActionEnabled
-    {
-        get => _queueLevelActionEnabled;
-        set => this.RaiseAndSetIfChanged(ref _queueLevelActionEnabled, value);
-    }
+    public ReactiveCommand<Unit, Unit> RefreshCommand { get; }
+    public ReactiveCommand<Unit, Unit> AddMessageCommand { get; }
+    public ReactiveCommand<string, Unit> PurgeMessagesCommand { get; }
+    public ReactiveCommand<Unit, Unit> TransferDeadletterMessagesCommand { get; }
+
     public MainWindowViewModel()
     {
         _loggingService = Locator.Current.GetService<ILoggingService>();
@@ -162,11 +163,17 @@ public class MainWindowViewModel : ViewModelBase
         FilteredConnectedServiceBuses = new ObservableCollection<ServiceBusResource>();
         ConnectedServiceBuses.CollectionChanged += (sender, args) => FilterTree();
 
-        _queueLevelActionEnabled = this.WhenAnyValue(
+        var canExecuteQueueLevelAction = this.WhenAnyValue(
             x => x.CurrentSubscription,
-            x=> x.CurrentQueue,
-            (subscription, queue) => subscription != null || queue != null 
+            x => x.CurrentQueue,
+            (subscription, queue) => subscription != null || queue != null
         );
+
+        RefreshCommand = ReactiveCommand.CreateFromTask(Refresh, canExecuteQueueLevelAction);
+        AddMessageCommand = ReactiveCommand.CreateFromTask(AddMessage, canExecuteQueueLevelAction);
+        PurgeMessagesCommand = ReactiveCommand.CreateFromTask<string>(PurgeMessages, canExecuteQueueLevelAction);
+        TransferDeadletterMessagesCommand =
+            ReactiveCommand.CreateFromTask(TransferDeadletterMessages, canExecuteQueueLevelAction);
 
         RefreshTabHeaders();
 
@@ -451,7 +458,7 @@ public class MainWindowViewModel : ViewModelBase
         }
     }
         
-    public async void AddMessage()
+    public async Task AddMessage()
     {
         var viewModal = new AddMessageWindowViewModal();
 
@@ -493,7 +500,7 @@ public class MainWindowViewModel : ViewModelBase
         }
     }
 
-    public async void TransferDeadletterMessages()
+    public async Task TransferDeadletterMessages()
     {
         string dlqPath = null;
         string transferTo = null; 
@@ -546,7 +553,7 @@ public class MainWindowViewModel : ViewModelBase
         }
     }
 
-    public async void PurgeMessages(string isDlqText)
+    public async Task PurgeMessages(string isDlqText)
     {
         var isDlq = Convert.ToBoolean(isDlqText);
         string purgingPath = null;

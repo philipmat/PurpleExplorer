@@ -62,13 +62,18 @@ public class MainWindow : Window
         }
     }
 
+    private bool _isClearingSelection;
     private async void TreeView_SelectionChanged(object sender, SelectionChangedEventArgs e)
     {
+        if (_isClearingSelection) return;
+
         var mainWindowViewModel = DataContext as MainWindowViewModel;
         var treeView = sender as TreeView;
 
+        _isClearingSelection = true;
         ClearOtherSelections(treeView);
         mainWindowViewModel.ClearAllSelections();
+        _isClearingSelection = false;
             
         var selectedItem = treeView.SelectedItems.Count > 0 ? treeView.SelectedItems[0] : null;
         if (selectedItem is ServiceBusSubscription selectedSubscription)

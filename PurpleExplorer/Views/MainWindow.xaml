@@ -41,36 +41,36 @@
                     <TextBlock VerticalAlignment="Center">Connect</TextBlock>
                 </StackPanel>
             </Button>
-            <Button Name="RefreshButton" Classes="topButton" IsEnabled="{Binding QueueLevelActionEnabled^}"
-                    Command="{Binding Refresh}">
+            <Button Name="RefreshButton" Classes="topButton"
+                    Command="{Binding RefreshCommand}">
                 <StackPanel Orientation="Horizontal">
                     <i:Icon Value="fa-arrows-rotate" />
                     <TextBlock VerticalAlignment="Center">Refresh</TextBlock>
                 </StackPanel>
             </Button>
-            <Button Name="AddButton" Classes="topButton" IsEnabled="{Binding QueueLevelActionEnabled^}"
-                    Command="{Binding AddMessage}">
+            <Button Name="AddButton" Classes="topButton"
+                    Command="{Binding AddMessageCommand}">
                 <StackPanel Orientation="Horizontal">
                     <i:Icon Value="fa-envelope" />
                     <TextBlock VerticalAlignment="Center">New message</TextBlock>
                 </StackPanel>
             </Button>
-            <Button Name="btnPurgeActiveMessages" Classes="topButton" IsEnabled="{Binding QueueLevelActionEnabled^}"
-                    Command="{Binding PurgeMessages}" CommandParameter="false">
+            <Button Name="PurgeActiveMessagesButton" Classes="topButton"
+                    Command="{Binding PurgeMessagesCommand}" CommandParameter="false">
                 <StackPanel Orientation="Horizontal">
                     <i:Icon Value="fa-trash" />
                     <TextBlock VerticalAlignment="Center">Purge messages</TextBlock>
                 </StackPanel>
             </Button>
-            <Button Name="btnPurgeDlqMessages" Classes="topButton" IsEnabled="{Binding QueueLevelActionEnabled^}"
-                    Command="{Binding PurgeMessages}" CommandParameter="true">
+            <Button Name="PurgeDlqMessagesButton" Classes="topButton"
+                    Command="{Binding PurgeMessagesCommand}" CommandParameter="true">
                 <StackPanel Orientation="Horizontal">
                     <i:Icon Value="fa-trash" />
                     <TextBlock VerticalAlignment="Center">Purge dead-letter</TextBlock>
                 </StackPanel>
             </Button>
-            <Button Name="btnTransferDlqMessages" Classes="topButton" IsEnabled="{Binding QueueLevelActionEnabled^}"
-                    Command="{Binding TransferDeadletterMessages}">
+            <Button Name="TransferDlqMessagesButton" Classes="topButton"
+                    Command="{Binding TransferDeadletterMessagesCommand}">
                 <StackPanel Orientation="Horizontal">
                     <i:Icon Value="fa-shuffle" />
                     <TextBlock VerticalAlignment="Center">Transfer DLQ</TextBlock>

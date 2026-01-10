@@ -10,6 +10,6 @@ public class ServiceBusQueue : MessageCollection
     public ServiceBusQueue(QueueRuntimeInfo runtimeInfo)
         : base(runtimeInfo.MessageCountDetails.ActiveMessageCount, runtimeInfo.MessageCountDetails.DeadLetterMessageCount)
     {
-            
+        Name = runtimeInfo.Path;
     }
 }
