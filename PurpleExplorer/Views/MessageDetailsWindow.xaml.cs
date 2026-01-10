@@ -12,6 +12,13 @@ public class MessageDetailsWindow : Window
 #if DEBUG
         this.AttachDevTools();
 #endif
+        /*
+        Opened += (sender, e) =>
+        {
+            var firstField = this.FindControl<Control>("MessageId");
+            // firstField?.Focus();
+        };
+        */
     }
 
     private void InitializeComponent()

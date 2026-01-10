@@ -113,6 +113,7 @@ public class MessageDetailsWindowViewModel : ViewModelBase
 
     public void CloseWindow(Window window)
     {
+        // _loggingService.Log("Closing window");
         window.Close();
     }
 

@@ -4,16 +4,19 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         mc:Ignorable="d" d:DesignWidth="780" d:DesignHeight="630"
         x:Class="PurpleExplorer.Views.MessageDetailsWindow"
+        x:Name="messageDetailsWindow"
         xmlns:vm="clr-namespace:PurpleExplorer.ViewModels;assembly=PurpleExplorer"
         xmlns:i="clr-namespace:Projektanker.Icons.Avalonia;assembly=Projektanker.Icons.Avalonia"
         Title="Message Details" Icon="/Assets/avalonia-logo.ico"
         Width="680" Height="630"
+        Focusable="True"
         WindowStartupLocation="CenterOwner">
 
     <Window.KeyBindings>
-        <KeyBinding Gesture="Ctrl+W" Command="{Binding CloseWindowCommand}" CommandParameter="{Binding $parent[Window]}" />
-        <KeyBinding Gesture="Cmd+W" Command="{Binding CloseWindowCommand}" CommandParameter="{Binding $parent[Window]}" />
-        <KeyBinding Gesture="Ctrl+F4" Command="{Binding CloseWindowCommand}" CommandParameter="{Binding $parent[Window]}" />
+        <KeyBinding Gesture="Ctrl+W" Command="{Binding CloseWindowCommand}" CommandParameter="{Binding #messageDetailsWindow}" />
+        <KeyBinding Gesture="Cmd+W" Command="{Binding CloseWindowCommand}" CommandParameter="{Binding #messageDetailsWindow}" />
+        <KeyBinding Gesture="Ctrl+F4" Command="{Binding CloseWindowCommand}" CommandParameter="{Binding #messageDetailsWindow}" />
+        <KeyBinding Gesture="Escape" Command="{Binding CloseWindowCommand}" CommandParameter="{Binding #messageDetailsWindow}" />
     </Window.KeyBindings>
 
     <Design.DataContext>
@@ -45,7 +48,7 @@
             <DockPanel Height="30" LastChildFill="False">
                 <Button Name="MinusButton" Classes="topButton" IsEnabled="{Binding !!CurrentMessage}"
                         Command="{Binding DeleteMessageCommand}"
-                        CommandParameter="{Binding $parent[Window]}">
+                        CommandParameter="{Binding #messageDetailsWindow}">
                     <StackPanel Orientation="Horizontal">
                         <!-- <DrawingPresenter Drawing="{DynamicResource Material.Delete}" /> -->
                         <TextBlock VerticalAlignment="Center">Delete message</TextBlock>
@@ -68,7 +71,8 @@
                     </StackPanel>
                 </Button>
                 <Button Command="{Binding CloseWindowCommand}"
-                        CommandParameter="{Binding $parent[Window]}"
+                        CommandParameter="{Binding #messageDetailsWindow}"
+                        HotKey="Ctrl+W"
                         DockPanel.Dock="Right"
                         Classes="topButton">
                     <StackPanel Orientation="Horizontal" Spacing="5">
@@ -111,7 +115,7 @@
                     <Border Grid.Row="9" Grid.ColumnSpan="2" BorderBrush="LightGray" BorderThickness="0,0,0,1" VerticalAlignment="Bottom" IsVisible="{Binding CurrentMessage.IsDlq}" />
 
                     <TextBlock Text="MessageId" Classes="left" Grid.Row="0" Grid.Column="0" />
-                    <SelectableTextBlock Grid.Row="0" Grid.Column="1" Text="{Binding CurrentMessage.MessageId}" Classes="right" />
+                    <SelectableTextBlock Name="MessageId" Grid.Row="0" Grid.Column="1" Text="{Binding CurrentMessage.MessageId}" Classes="right" />
 
                     <TextBlock Text="Content Type" Classes="left" Grid.Row="1" Grid.Column="0" />
                     <TextBlock Grid.Row="1" Grid.Column="1" Text="{Binding CurrentMessage.ContentType}" Classes="right" />

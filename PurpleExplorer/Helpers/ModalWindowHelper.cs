@@ -32,6 +32,8 @@ public static class ModalWindowHelper
         };
 
         await window.ShowDialog(mainWindow);
+        // focus window so the key bindings of that window work
+        window.Focus();
         return window.DataContext as U;
     }
 }
