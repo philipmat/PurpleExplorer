@@ -1,11 +1,6 @@
 ﻿namespace PurpleExplorer.ViewModels;
 
-public class DialogViewModelBase : ViewModelBase 
+public class DialogViewModelBase : ViewModelBase
 {
-    public bool Cancel { get; set; }
-        
-    public DialogViewModelBase()
-    {
-        this.Cancel = true;
-    }
+    public bool Cancel { get; set; } = true;
 }

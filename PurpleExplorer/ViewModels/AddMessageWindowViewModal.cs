@@ -7,17 +7,22 @@ namespace PurpleExplorer.ViewModels;
 
 public class AddMessageWindowViewModal : DialogViewModelBase
 {
-    private string _message;
-    private string _title;
-    private readonly IAppState _appState;
+    private string? _message;
+    private string? _title;
 
-    public string Message
+    public AddMessageWindowViewModal(IAppState? appState = null)
+    {
+        IAppState appState1 = appState ?? Locator.Current.GetService<IAppState>()!;
+        SavedMessages = appState1.SavedMessages;
+    }
+
+    public string? Message
     {
         get => _message;
         set => this.RaiseAndSetIfChanged(ref _message, value);
-    }        
-        
-    public string Title
+    }
+
+    public string? Title
     {
         get => _title;
         set => this.RaiseAndSetIfChanged(ref _title, value);
@@ -25,15 +30,12 @@ public class AddMessageWindowViewModal : DialogViewModelBase
 
     public ObservableCollection<SavedMessage> SavedMessages { get; set; }
 
-    public AddMessageWindowViewModal(IAppState appState = null)
-    {
-        _appState = appState ?? Locator.Current.GetService<IAppState>();
-        SavedMessages = _appState.SavedMessages;
-    }
-
     public void SaveMessage()
     {
-        var newMessage = new SavedMessage
+        // TODO: log to console
+        if (string.IsNullOrWhiteSpace(Message) || string.IsNullOrWhiteSpace(Title)) return;
+
+        SavedMessage newMessage = new SavedMessage
         {
             Message = Message,
             Title = Title

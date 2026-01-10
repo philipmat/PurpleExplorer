@@ -2,8 +2,6 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:local="clr-namespace:PurpleExplorer"
              xmlns:vm="clr-namespace:PurpleExplorer.ViewModels;assembly=PurpleExplorer"
-             xmlns:i="https://github.com/projektanker/icons.avalonia"
-             xmlns:fa="clr-namespace:Projektanker.Icons.Avalonia.FontAwesome;assembly=Projektanker.Icons.Avalonia.FontAwesome"
              x:Class="PurpleExplorer.App"
              Name="Purple Explorer">
     <Application.DataTemplates>
@@ -12,7 +10,7 @@
 
     <Application.Styles>
         <FluentTheme />
-        <StyleInclude Source="avares://Avalonia.Controls.DataGrid/Themes/Fluent.xaml"/>
+        <StyleInclude Source="avares://Avalonia.Controls.DataGrid/Themes/Fluent.xaml" />
         <StyleInclude Source="avares://PurpleExplorer/Styles/CommonStyles.xaml" />
     </Application.Styles>
 

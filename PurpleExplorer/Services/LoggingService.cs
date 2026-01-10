@@ -6,12 +6,7 @@ namespace PurpleExplorer.Services;
 
 public class LoggingService : ReactiveObject, ILoggingService
 {
-    private readonly StringBuilder _log;
-
-    public LoggingService()
-    {
-        _log = new StringBuilder();
-    }
+    private readonly StringBuilder _log = new();
 
     public string Logs => _log.ToString();
 

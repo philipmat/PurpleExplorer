@@ -1,15 +1,11 @@
-using Microsoft.Azure.ServiceBus.Management;
+using Azure.Messaging.ServiceBus.Administration;
 
 namespace PurpleExplorer.Models;
 
-public class ServiceBusQueue : MessageCollection
+public class ServiceBusQueue(QueueRuntimeProperties runtimeInfo) : MessageCollection(
+    runtimeInfo.ActiveMessageCount,
+    runtimeInfo.DeadLetterMessageCount)
 {
-    public string Name { get; set; }
-    public ServiceBusResource ServiceBus { get; set; }
-        
-    public ServiceBusQueue(QueueRuntimeInfo runtimeInfo)
-        : base(runtimeInfo.MessageCountDetails.ActiveMessageCount, runtimeInfo.MessageCountDetails.DeadLetterMessageCount)
-    {
-        Name = runtimeInfo.Path;
-    }
+    public string Name { get; set; } = runtimeInfo.Name;
+    public ServiceBusResource? ServiceBus { get; set; }
 }

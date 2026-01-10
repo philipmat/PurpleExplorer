@@ -13,10 +13,14 @@
         WindowStartupLocation="CenterOwner">
 
     <Window.KeyBindings>
-        <KeyBinding Gesture="Ctrl+W" Command="{Binding CloseWindowCommand}" CommandParameter="{Binding #messageDetailsWindow}" />
-        <KeyBinding Gesture="Cmd+W" Command="{Binding CloseWindowCommand}" CommandParameter="{Binding #messageDetailsWindow}" />
-        <KeyBinding Gesture="Ctrl+F4" Command="{Binding CloseWindowCommand}" CommandParameter="{Binding #messageDetailsWindow}" />
-        <KeyBinding Gesture="Escape" Command="{Binding CloseWindowCommand}" CommandParameter="{Binding #messageDetailsWindow}" />
+        <KeyBinding Gesture="Ctrl+W" Command="{Binding CloseWindowCommand}"
+                    CommandParameter="{Binding #messageDetailsWindow}" />
+        <KeyBinding Gesture="Cmd+W" Command="{Binding CloseWindowCommand}"
+                    CommandParameter="{Binding #messageDetailsWindow}" />
+        <KeyBinding Gesture="Ctrl+F4" Command="{Binding CloseWindowCommand}"
+                    CommandParameter="{Binding #messageDetailsWindow}" />
+        <KeyBinding Gesture="Escape" Command="{Binding CloseWindowCommand}"
+                    CommandParameter="{Binding #messageDetailsWindow}" />
     </Window.KeyBindings>
 
     <Design.DataContext>
@@ -53,7 +57,7 @@
                     <TextBlock VerticalAlignment="Center">Delete message</TextBlock>
                 </StackPanel>
             </Button>
-            <Button Command="{Binding DeadletterMessageCommand}"
+            <Button Command="{Binding DeadLetterMessageCommand}"
                     IsVisible="{Binding !CurrentMessage.IsDlq}"
                     Classes="topButton">
                 <StackPanel Orientation="Horizontal">
@@ -104,60 +108,76 @@
                         </Grid.ColumnDefinitions>
 
                         <!-- Grid Splitter -->
-                        <GridSplitter Grid.Column="1" Grid.Row="0" Grid.RowSpan="10" 
+                        <GridSplitter Grid.Column="1" Grid.Row="0" Grid.RowSpan="10"
                                       Width="4" HorizontalAlignment="Stretch" Background="Transparent" />
 
                         <!-- Grid Lines -->
-                        <Border Grid.Row="0" Grid.RowSpan="10" Grid.Column="0" BorderBrush="LightGray" BorderThickness="0,0,1,0" HorizontalAlignment="Right" />
-                        <Border Grid.Row="0" Grid.ColumnSpan="3" BorderBrush="LightGray" BorderThickness="0,0,0,1" VerticalAlignment="Bottom" />
-                        <Border Grid.Row="1" Grid.ColumnSpan="3" BorderBrush="LightGray" BorderThickness="0,0,0,1" VerticalAlignment="Bottom" />
-                        <Border Grid.Row="2" Grid.ColumnSpan="3" BorderBrush="LightGray" BorderThickness="0,0,0,1" VerticalAlignment="Bottom" />
-                        <Border Grid.Row="3" Grid.ColumnSpan="3" BorderBrush="LightGray" BorderThickness="0,0,0,1" VerticalAlignment="Bottom" />
-                        <Border Grid.Row="4" Grid.ColumnSpan="3" BorderBrush="LightGray" BorderThickness="0,0,0,1" VerticalAlignment="Bottom" />
-                        <Border Grid.Row="5" Grid.ColumnSpan="3" BorderBrush="LightGray" BorderThickness="0,0,0,1" VerticalAlignment="Bottom" />
-                        <Border Grid.Row="6" Grid.ColumnSpan="3" BorderBrush="LightGray" BorderThickness="0,0,0,1" VerticalAlignment="Bottom" />
-                        <Border Grid.Row="7" Grid.ColumnSpan="3" BorderBrush="LightGray" BorderThickness="0,0,0,1" VerticalAlignment="Bottom" />
-                        <Border Grid.Row="8" Grid.ColumnSpan="3" BorderBrush="LightGray" BorderThickness="0,0,0,1" VerticalAlignment="Bottom" />
-                        <Border Grid.Row="9" Grid.ColumnSpan="3" BorderBrush="LightGray" BorderThickness="0,0,0,1" VerticalAlignment="Bottom" IsVisible="{Binding CurrentMessage.IsDlq}" />
+                        <Border Grid.Row="0" Grid.RowSpan="10" Grid.Column="0" BorderBrush="LightGray"
+                                BorderThickness="0,0,1,0" HorizontalAlignment="Right" />
+                        <Border Grid.Row="0" Grid.ColumnSpan="3" BorderBrush="LightGray" BorderThickness="0,0,0,1"
+                                VerticalAlignment="Bottom" />
+                        <Border Grid.Row="1" Grid.ColumnSpan="3" BorderBrush="LightGray" BorderThickness="0,0,0,1"
+                                VerticalAlignment="Bottom" />
+                        <Border Grid.Row="2" Grid.ColumnSpan="3" BorderBrush="LightGray" BorderThickness="0,0,0,1"
+                                VerticalAlignment="Bottom" />
+                        <Border Grid.Row="3" Grid.ColumnSpan="3" BorderBrush="LightGray" BorderThickness="0,0,0,1"
+                                VerticalAlignment="Bottom" />
+                        <Border Grid.Row="4" Grid.ColumnSpan="3" BorderBrush="LightGray" BorderThickness="0,0,0,1"
+                                VerticalAlignment="Bottom" />
+                        <Border Grid.Row="5" Grid.ColumnSpan="3" BorderBrush="LightGray" BorderThickness="0,0,0,1"
+                                VerticalAlignment="Bottom" />
+                        <Border Grid.Row="6" Grid.ColumnSpan="3" BorderBrush="LightGray" BorderThickness="0,0,0,1"
+                                VerticalAlignment="Bottom" />
+                        <Border Grid.Row="7" Grid.ColumnSpan="3" BorderBrush="LightGray" BorderThickness="0,0,0,1"
+                                VerticalAlignment="Bottom" />
+                        <Border Grid.Row="8" Grid.ColumnSpan="3" BorderBrush="LightGray" BorderThickness="0,0,0,1"
+                                VerticalAlignment="Bottom" />
+                        <Border Grid.Row="9" Grid.ColumnSpan="3" BorderBrush="LightGray" BorderThickness="0,0,0,1"
+                                VerticalAlignment="Bottom" IsVisible="{Binding CurrentMessage.IsDlq}" />
 
                         <TextBlock Text="MessageId" Classes="left" Grid.Row="0" Grid.Column="0" />
-                        <SelectableTextBlock Name="MessageId" Grid.Row="0" Grid.Column="2" Text="{Binding CurrentMessage.MessageId}" Classes="right" />
+                        <SelectableTextBlock Name="MessageId" Grid.Row="0" Grid.Column="2"
+                                             Text="{Binding CurrentMessage.MessageId}" Classes="right" />
 
                         <TextBlock Text="Content Type" Classes="left" Grid.Row="1" Grid.Column="0" />
-                        <TextBlock Grid.Row="1" Grid.Column="2" Text="{Binding CurrentMessage.ContentType}" Classes="right" />
+                        <TextBlock Grid.Row="1" Grid.Column="2" Text="{Binding CurrentMessage.ContentType}"
+                                   Classes="right" />
 
                         <TextBlock Text="Content" Grid.Row="2" Classes="left" Grid.Column="0" />
-                        <TextBox Grid.Row="2" Grid.Column="2" IsReadOnly="True" Name="ContentTextBlock" 
-                          TextWrapping="Wrap" AcceptsReturn="True" MinHeight="200"
-                          Text="{Binding CurrentMessage.Content}" />
+                        <TextBox Grid.Row="2" Grid.Column="2" IsReadOnly="True" Name="ContentTextBlock"
+                                 TextWrapping="Wrap" AcceptsReturn="True" MinHeight="200"
+                                 Text="{Binding CurrentMessage.Content}" />
 
                         <TextBlock Grid.Row="3" Grid.Column="0" Classes="left" Text="Sequence Number" />
-                        <SelectableTextBlock Grid.Row="3" Grid.Column="2" Classes="right" Text="{Binding CurrentMessage.SequenceNumber}" />
+                        <SelectableTextBlock Grid.Row="3" Grid.Column="2" Classes="right"
+                                             Text="{Binding CurrentMessage.SequenceNumber}" />
 
                         <TextBlock Grid.Row="4" Grid.Column="0" Classes="left" Text="Size" />
                         <TextBlock Grid.Row="4" Grid.Column="2" Classes="right" Text="{Binding CurrentMessage.Size}" />
 
                         <TextBlock Grid.Row="5" Grid.Column="0" Classes="left" Text="Delivery Count" />
-                        <TextBlock Grid.Row="5" Grid.Column="2" Classes="right" Text="{Binding CurrentMessage.DeliveryCount}" />
+                        <TextBlock Grid.Row="5" Grid.Column="2" Classes="right"
+                                   Text="{Binding CurrentMessage.DeliveryCount}" />
 
                         <TextBlock Grid.Row="6" Grid.Column="0" Classes="left" Text="Correlation Id" />
-                        <SelectableTextBlock Grid.Row="6" Grid.Column="2" Classes="right" Text="{Binding CurrentMessage.CorrelationId}" />
+                        <SelectableTextBlock Grid.Row="6" Grid.Column="2" Classes="right"
+                                             Text="{Binding CurrentMessage.CorrelationId}" />
 
                         <TextBlock Grid.Row="7" Grid.Column="0" Classes="left" Text="Time To Live" />
-                        <TextBlock Grid.Row="7" Grid.Column="2" Classes="right" Text="{Binding CurrentMessage.TimeToLive}" />
+                        <TextBlock Grid.Row="7" Grid.Column="2" Classes="right"
+                                   Text="{Binding CurrentMessage.TimeToLive}" />
 
                         <TextBlock Grid.Row="8" Grid.Column="0" Classes="left" Text="Enqueued Time (UTC)" />
-                        <SelectableTextBlock Grid.Row="8" Grid.Column="2" Classes="right" Text="{Binding CurrentMessage.EnqueueTimeUtc}" />
+                        <SelectableTextBlock Grid.Row="8" Grid.Column="2" Classes="right"
+                                             Text="{Binding CurrentMessage.EnqueueTimeUtc}" />
 
-                        <TextBlock Grid.Row="9" Grid.Column="0" Classes="left" Text="DLQ Reason" 
+                        <TextBlock Grid.Row="9" Grid.Column="0" Classes="left" Text="DLQ Reason"
                                    IsVisible="{Binding CurrentMessage.IsDlq}"
-                                   VerticalAlignment="Top"
-                                   />
+                                   VerticalAlignment="Top" />
                         <SelectableTextBlock Grid.Row="9" Grid.Column="2" Classes="right"
-                                   IsVisible="{Binding CurrentMessage.IsDlq}"
-                                   Text="{Binding CurrentMessage.DeadLetterReason}" 
-                                   TextWrapping="Wrap" Height="NaN" MinHeight="20"
-                                   />
+                                             IsVisible="{Binding CurrentMessage.IsDlq}"
+                                             Text="{Binding CurrentMessage.DeadLetterReason}"
+                                             TextWrapping="Wrap" Height="NaN" MinHeight="20" />
                     </Grid>
                 </Border>
                 <TextBlock Text="Application Properties" FontWeight="Bold" Margin="5,10,0,5" />

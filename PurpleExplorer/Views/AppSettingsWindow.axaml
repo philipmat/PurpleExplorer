@@ -8,34 +8,36 @@
         Width="520" Height="250"
         Title="AppSettingsWindow"
         WindowStartupLocation="CenterOwner">
-    
-        <Design.DataContext>
-                <models:AppState />
-        </Design.DataContext>
-        
-        <Window.Styles>
-                <Style Selector="TextBlock.left">
-                        <Setter Property="Padding" Value="0, 5, 0, 5" />
-                        <Setter Property="VerticalAlignment" Value="Center" />
-                        <Setter Property="HorizontalAlignment" Value="Left" />
-                </Style>
-                <Style Selector="NumericUpDown.right">
-                        <Setter Property="Padding" Value="0, 5, 0, 5" />
-                        <Setter Property="VerticalAlignment" Value="Center" />
-                </Style>
-        </Window.Styles>
-        
-        <Grid ColumnDefinitions="250,*" RowDefinitions="Auto,Auto,Auto,Auto"  Margin="4" VerticalAlignment="Top">
-                <TextBlock Text="How many queues to fetch from namespace" Grid.Row="0" Grid.Column="0" Classes="left"/>
-                <NumericUpDown Grid.Row="0" Grid.Column="1" Value="{Binding AppSettings.QueueListFetchCount}" Classes="right" />
-                
-                <TextBlock Text="How many messages to fetch from queue" Grid.Row="1" Grid.Column="0" Classes="left"/>
-                <NumericUpDown Grid.Row="1" Grid.Column="1" Value="{Binding AppSettings.QueueMessageFetchCount}" Classes="right" />
-                
-                <TextBlock Text="How many topics to fetch from namespace" Grid.Row="2" Grid.Column="0" Classes="left"/>
-                <NumericUpDown Grid.Row="2" Grid.Column="1" Value="{Binding AppSettings.TopicListFetchCount}" Classes="right" />
-                
-                <TextBlock Text="How many messages to fetch from topic" Grid.Row="3" Grid.Column="0" Classes="left"/>
-                <NumericUpDown Grid.Row="3" Grid.Column="1" Value="{Binding AppSettings.TopicMessageFetchCount}" Classes="right" />
-        </Grid>
+
+    <Design.DataContext>
+        <models:AppState />
+    </Design.DataContext>
+
+    <Window.Styles>
+        <Style Selector="TextBlock.left">
+            <Setter Property="Padding" Value="0, 5, 0, 5" />
+            <Setter Property="VerticalAlignment" Value="Center" />
+            <Setter Property="HorizontalAlignment" Value="Left" />
+        </Style>
+        <Style Selector="NumericUpDown.right">
+            <Setter Property="Padding" Value="0, 5, 0, 5" />
+            <Setter Property="VerticalAlignment" Value="Center" />
+        </Style>
+    </Window.Styles>
+
+    <Grid ColumnDefinitions="250,*" RowDefinitions="Auto,Auto,Auto,Auto" Margin="4" VerticalAlignment="Top">
+        <TextBlock Text="How many queues to fetch from namespace" Grid.Row="0" Grid.Column="0" Classes="left" />
+        <NumericUpDown Grid.Row="0" Grid.Column="1" Value="{Binding AppSettings.QueueListFetchCount}" Classes="right" />
+
+        <TextBlock Text="How many messages to fetch from queue" Grid.Row="1" Grid.Column="0" Classes="left" />
+        <NumericUpDown Grid.Row="1" Grid.Column="1" Value="{Binding AppSettings.QueueMessageFetchCount}"
+                       Classes="right" />
+
+        <TextBlock Text="How many topics to fetch from namespace" Grid.Row="2" Grid.Column="0" Classes="left" />
+        <NumericUpDown Grid.Row="2" Grid.Column="1" Value="{Binding AppSettings.TopicListFetchCount}" Classes="right" />
+
+        <TextBlock Text="How many messages to fetch from topic" Grid.Row="3" Grid.Column="0" Classes="left" />
+        <NumericUpDown Grid.Row="3" Grid.Column="1" Value="{Binding AppSettings.TopicMessageFetchCount}"
+                       Classes="right" />
+    </Grid>
 </Window>

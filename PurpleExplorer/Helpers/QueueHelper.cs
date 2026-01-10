@@ -1,130 +1,132 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
-using Microsoft.Azure.ServiceBus;
-using Microsoft.Azure.ServiceBus.Core;
-using Microsoft.Azure.ServiceBus.Management;
+using Azure;
+using Azure.Messaging.ServiceBus;
+using Azure.Messaging.ServiceBus.Administration;
 using PurpleExplorer.Models;
 using Message = PurpleExplorer.Models.Message;
-using AzureMessage = Microsoft.Azure.ServiceBus.Message;
+using AzureMessage = Azure.Messaging.ServiceBus.ServiceBusMessage;
 
 namespace PurpleExplorer.Helpers;
 
-public class QueueHelper : BaseHelper, IQueueHelper
+public class QueueHelper(AppSettings appSettings) : BaseHelper, IQueueHelper
 {
-    private readonly AppSettings _appSettings;
-
-    public QueueHelper(AppSettings appSettings)
-    {
-        _appSettings = appSettings;
-    }
-
     public async Task<IList<ServiceBusQueue>> GetQueues(ServiceBusConnectionString connectionString)
     {
-        var client = GetManagementClient(connectionString);
-        var queues = await GetQueues(client);
-        await client.CloseAsync();
+        ServiceBusAdministrationClient client = GetManagementClient(connectionString);
+        List<ServiceBusQueue> queues = await GetQueues(client);
         return queues;
     }
 
     public async Task SendMessage(ServiceBusConnectionString connectionString, string queueName, string content)
     {
-        var message = new AzureMessage { Body = Encoding.UTF8.GetBytes(content) };
+        var message = new AzureMessage(content);
         await SendMessage(connectionString, queueName, message);
     }
 
     public async Task SendMessage(ServiceBusConnectionString connectionString, string queueName, AzureMessage message)
     {
-        var client = GetQueueClient(connectionString, queueName);
-        await client.SendAsync(message);
-        await client.CloseAsync();
+        await using ServiceBusClient client = GetServiceBusClient(connectionString);
+        ServiceBusSender? sender = client.CreateSender(queueName);
+        await sender.SendMessageAsync(message);
     }
 
     public async Task<IList<Message>> GetMessages(ServiceBusConnectionString connectionString, string queueName)
     {
-        var receiver = GetMessageReceiver(connectionString, queueName, ReceiveMode.PeekLock);
-        var messages = await receiver.PeekAsync(_appSettings.QueueMessageFetchCount);
+        await using ServiceBusClient client = GetServiceBusClient(connectionString);
+        ServiceBusReceiver? receiver = client.CreateReceiver(
+            queueName,
+            new ServiceBusReceiverOptions
+            {
+                ReceiveMode = ServiceBusReceiveMode.PeekLock
+            });
+        IReadOnlyList<ServiceBusReceivedMessage>? messages =
+            await receiver.PeekMessagesAsync(appSettings.QueueMessageFetchCount);
         return messages.Select(msg => new Message(msg, false)).ToList();
     }
 
     public async Task<IList<Message>> GetDlqMessages(ServiceBusConnectionString connectionString, string queueName)
     {
-        var deadletterPath = EntityNameHelper.FormatDeadLetterPath(queueName);
+        var deadletterPath = $"{queueName}/$DeadLetterQueue";
 
-        var receiver = GetMessageReceiver(connectionString, deadletterPath, ReceiveMode.PeekLock);
-        var receivedMessages = await receiver.PeekAsync(_appSettings.QueueMessageFetchCount);
-        await receiver.CloseAsync();
+        await using ServiceBusClient client = GetServiceBusClient(connectionString);
+        ServiceBusReceiver? receiver = client.CreateReceiver(
+            deadletterPath,
+            new ServiceBusReceiverOptions
+            {
+                ReceiveMode = ServiceBusReceiveMode.PeekLock
+            });
+        IReadOnlyList<ServiceBusReceivedMessage>? receivedMessages =
+            await receiver.PeekMessagesAsync(appSettings.QueueMessageFetchCount);
 
         return receivedMessages.Select(message => new Message(message, true)).ToList();
     }
 
     public async Task DeadletterMessage(ServiceBusConnectionString connectionString, string queue, Message message)
     {
-        var receiver = GetMessageReceiver(connectionString, queue, ReceiveMode.PeekLock);
+        await using ServiceBusClient client = GetServiceBusClient(connectionString);
+        ServiceBusReceiver? receiver = client.CreateReceiver(
+            queue,
+            new ServiceBusReceiverOptions
+            {
+                ReceiveMode = ServiceBusReceiveMode.PeekLock
+            });
 
         while (true)
         {
-            var messages = await receiver.ReceiveAsync(_appSettings.QueueMessageFetchCount);
-            if (messages == null || messages.Count == 0)
-            {
-                break;
-            }
+            IReadOnlyList<ServiceBusReceivedMessage>? messages =
+                await receiver.ReceiveMessagesAsync(appSettings.QueueMessageFetchCount);
+            if (messages == null || messages.Count == 0) break;
 
-            var foundMessage = messages.FirstOrDefault(m => m.MessageId.Equals(message.MessageId));
+            ServiceBusReceivedMessage? foundMessage =
+                messages.FirstOrDefault(m => m.MessageId.Equals(message.MessageId));
             if (foundMessage != null)
             {
-                await receiver.DeadLetterAsync(foundMessage.SystemProperties.LockToken);
+                await receiver.DeadLetterMessageAsync(foundMessage);
                 break;
             }
         }
-
-        await receiver.CloseAsync();
     }
 
-    public async Task DeleteMessage(ServiceBusConnectionString connectionString, string queue,
-        Message message, bool isDlq)
+    public async Task DeleteMessage(
+        ServiceBusConnectionString connectionString,
+        string queue,
+        Message message,
+        bool isDlq)
     {
-        var path = isDlq ? EntityNameHelper.FormatDeadLetterPath(queue) : queue;
+        string path = isDlq ? $"{queue}/$DeadLetterQueue" : queue;
 
-        var receiver = GetMessageReceiver(connectionString, path, ReceiveMode.PeekLock);
+        await using ServiceBusClient client = GetServiceBusClient(connectionString);
+        ServiceBusReceiver? receiver = client.CreateReceiver(
+            path,
+            new ServiceBusReceiverOptions
+            {
+                ReceiveMode = ServiceBusReceiveMode.PeekLock
+            });
 
         while (true)
         {
-            var messages = await receiver.ReceiveAsync(_appSettings.QueueMessageFetchCount);
-            if (messages == null || messages.Count == 0)
-            {
-                break;
-            }
+            IReadOnlyList<ServiceBusReceivedMessage>? messages =
+                await receiver.ReceiveMessagesAsync(appSettings.QueueMessageFetchCount);
+            if (messages == null || messages.Count == 0) break;
 
-            var foundMessage = messages.FirstOrDefault(m => m.MessageId.Equals(message.MessageId));
+            ServiceBusReceivedMessage? foundMessage =
+                messages.FirstOrDefault(m => m.MessageId.Equals(message.MessageId));
             if (foundMessage != null)
             {
-                await receiver.CompleteAsync(foundMessage.SystemProperties.LockToken);
+                await receiver.CompleteMessageAsync(foundMessage);
                 break;
             }
         }
-
-        await receiver.CloseAsync();
-    }
-
-    private async Task<AzureMessage> PeekDlqMessageBySequenceNumber(ServiceBusConnectionString connectionString,
-        string queue, long sequenceNumber)
-    {
-        var deadletterPath = EntityNameHelper.FormatDeadLetterPath(queue);
-
-        var receiver = GetMessageReceiver(connectionString, deadletterPath, ReceiveMode.PeekLock);
-        var azureMessage = await receiver.PeekBySequenceNumberAsync(sequenceNumber);
-        await receiver.CloseAsync();
-
-        return azureMessage;
     }
 
     public async Task ResubmitDlqMessage(ServiceBusConnectionString connectionString, string queue, Message message)
     {
-        var azureMessage = await PeekDlqMessageBySequenceNumber(connectionString, queue, message.SequenceNumber);
-        var clonedMessage = azureMessage.CloneMessage();
+        ServiceBusReceivedMessage azureMessage =
+            await PeekDlqMessageBySequenceNumber(connectionString, queue, message.SequenceNumber);
+        var clonedMessage = new AzureMessage(azureMessage);
 
         await SendMessage(connectionString, queue, clonedMessage);
 
@@ -133,112 +135,111 @@ public class QueueHelper : BaseHelper, IQueueHelper
 
     public async Task<long> PurgeMessages(ServiceBusConnectionString connectionString, string queue, bool isDlq)
     {
-        var path = isDlq ? EntityNameHelper.FormatDeadLetterPath(queue) : queue;
+        string path = isDlq ? $"{queue}/$DeadLetterQueue" : queue;
 
         long purgedCount = 0;
 
-        var receiver = GetMessageReceiver(connectionString, path, ReceiveMode.ReceiveAndDelete);
-        var operationTimeout = TimeSpan.FromSeconds(5);
+        await using ServiceBusClient client = GetServiceBusClient(connectionString);
+        ServiceBusReceiver? receiver = client.CreateReceiver(
+            path,
+            new ServiceBusReceiverOptions
+            {
+                ReceiveMode = ServiceBusReceiveMode.ReceiveAndDelete
+            });
+        TimeSpan operationTimeout = TimeSpan.FromSeconds(5);
         while (true)
         {
-            var messages = await receiver.ReceiveAsync(_appSettings.QueueMessageFetchCount, operationTimeout);
-            if (messages == null || messages.Count == 0)
-            {
-                break;
-            }
+            IReadOnlyList<ServiceBusReceivedMessage>? messages = await receiver.ReceiveMessagesAsync(
+                appSettings.QueueMessageFetchCount,
+                operationTimeout);
+            if (messages == null || messages.Count == 0) break;
 
             purgedCount += messages.Count;
         }
 
-        await receiver.CloseAsync();
         return purgedCount;
     }
 
     public async Task<long> TransferDlqMessages(ServiceBusConnectionString connectionString, string queuePath)
     {
-        var path = EntityNameHelper.FormatDeadLetterPath(queuePath);
+        var path = $"{queuePath}/$DeadLetterQueue";
 
         long transferredCount = 0;
-        MessageReceiver receiver = null;
-        QueueClient sender = null;
-        try
-        {
-            receiver = GetMessageReceiver(connectionString, path, ReceiveMode.ReceiveAndDelete);
-            sender = GetQueueClient(connectionString, queuePath);
-            var operationTimeout = TimeSpan.FromSeconds(5);
-            while (true)
+        await using ServiceBusClient client = GetServiceBusClient(connectionString);
+        ServiceBusReceiver? receiver = client.CreateReceiver(
+            path,
+            new ServiceBusReceiverOptions
             {
-                var messages = await receiver.ReceiveAsync(_appSettings.QueueMessageFetchCount, operationTimeout);
-                if (messages == null || messages.Count == 0)
-                {
-                    break;
-                }
+                ReceiveMode = ServiceBusReceiveMode.ReceiveAndDelete
+            });
+        ServiceBusSender? sender = client.CreateSender(queuePath);
 
-                await sender.SendAsync(messages);
-
-                transferredCount += messages.Count;
-            }
-        }
-        finally
+        TimeSpan operationTimeout = TimeSpan.FromSeconds(5);
+        while (true)
         {
-            if (receiver != null)
-                await receiver.CloseAsync();
+            IReadOnlyList<ServiceBusReceivedMessage>? messages = await receiver.ReceiveMessagesAsync(
+                appSettings.QueueMessageFetchCount,
+                operationTimeout);
+            if (messages == null || messages.Count == 0) break;
 
-            if (sender != null)
-                await sender.CloseAsync();
+            IEnumerable<AzureMessage> messagesToSend = messages.Select(m => new AzureMessage(m));
+            await sender.SendMessagesAsync(messagesToSend);
+
+            transferredCount += messages.Count;
         }
 
         return transferredCount;
     }
-    
+
     public async Task<ServiceBusQueue> GetQueue(ServiceBusConnectionString connectionString, string queuePath)
     {
-        var client = GetManagementClient(connectionString);
-        var runtimeInfo = await client.GetQueueRuntimeInfoAsync(queuePath);
-        return new ServiceBusQueue(runtimeInfo)
+        ServiceBusAdministrationClient client = GetManagementClient(connectionString);
+        Response<QueueRuntimeProperties>? runtimeInfo = await client.GetQueueRuntimePropertiesAsync(queuePath);
+        return new ServiceBusQueue(runtimeInfo.Value)
         {
-            Name = runtimeInfo.Path
+            Name = runtimeInfo.Value.Name
         };
     }
 
-    private async Task<List<ServiceBusQueue>> GetQueues(ManagementClient client)
+    private async Task<ServiceBusReceivedMessage> PeekDlqMessageBySequenceNumber(
+        ServiceBusConnectionString connectionString,
+        string queue,
+        long sequenceNumber)
     {
-        var queueInfos = new List<QueueRuntimeInfo>();
-        var numberOfPages = _appSettings.QueueListFetchCount / MaxRequestItemsPerPage;
-        var remainder = _appSettings.QueueListFetchCount % (numberOfPages * MaxRequestItemsPerPage);
+        var deadletterPath = $"{queue}/$DeadLetterQueue";
 
-        for (int pageCount = 0; pageCount < numberOfPages; pageCount++)
-        {
-            var numberToSkip = MaxRequestItemsPerPage * pageCount;
-            var page = await client.GetQueuesRuntimeInfoAsync(MaxRequestItemsPerPage, numberToSkip);
-            if (page.Any())
+        await using ServiceBusClient client = GetServiceBusClient(connectionString);
+        ServiceBusReceiver? receiver = client.CreateReceiver(
+            deadletterPath,
+            new ServiceBusReceiverOptions
             {
-                queueInfos.AddRange(page);
-            }
-            else
-            {
-                return queueInfos
-                    .Select(q => new ServiceBusQueue(q)
-                    {
-                        Name = q.Path
-                    }).ToList();
-            }
-        }
+                ReceiveMode = ServiceBusReceiveMode.PeekLock
+            });
+        ServiceBusReceivedMessage? azureMessage = await receiver.PeekMessageAsync(sequenceNumber);
 
-        if (remainder > 0)
+        return azureMessage;
+    }
+
+    private async Task<List<ServiceBusQueue>> GetQueues(ServiceBusAdministrationClient client)
+    {
+        var queueInfos = new List<QueueRuntimeProperties>();
+        int numberOfPages = appSettings.QueueListFetchCount / MaxRequestItemsPerPage;
+        int remainder = appSettings.QueueListFetchCount % (numberOfPages * MaxRequestItemsPerPage);
+
+        AsyncPageable<QueueRuntimeProperties>? allQueues = client.GetQueuesRuntimePropertiesAsync();
+        var count = 0;
+        await foreach (QueueRuntimeProperties queue in allQueues)
         {
-            var numberAlreadyFetched = numberOfPages > 0
-                ? MaxRequestItemsPerPage * numberOfPages
-                : 0;
-            var remainingItems = await client.GetQueuesRuntimeInfoAsync(
-                remainder,
-                numberAlreadyFetched);
-            queueInfos.AddRange(remainingItems);
+            queueInfos.Add(queue);
+            count++;
+            if (count >= appSettings.QueueListFetchCount)
+                break;
         }
 
         return queueInfos.Select(q => new ServiceBusQueue(q)
-        {
-            Name = q.Path
-        }).ToList();
+            {
+                Name = q.Name
+            })
+            .ToList();
     }
 }

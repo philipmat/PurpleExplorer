@@ -1,3 +1,4 @@
+using System;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Input;
@@ -10,6 +11,8 @@ namespace PurpleExplorer.Views;
 
 public class MainWindow : Window
 {
+    private bool _isClearingSelection;
+
     public MainWindow()
     {
         InitializeComponent();
@@ -19,30 +22,24 @@ public class MainWindow : Window
         Opened += MainWindow_Opened;
     }
 
-    private void MainWindow_Opened(object sender, System.EventArgs e)
+    private void MainWindow_Opened(object? sender, EventArgs e)
     {
         var mainWindowViewModel = DataContext as MainWindowViewModel;
-        mainWindowViewModel.ConnectionBtnPopupCommand();
+        mainWindowViewModel?.ConnectionBtnPopupCommand();
     }
 
-    private void InitializeComponent()
+    // TODO: catch exceptions inside the method and log to console
+    private async void MessagesGrid_DoubleTapped(object? sender, TappedEventArgs e)
     {
-        AvaloniaXamlLoader.Load(this);
-    }
+        if (sender is not DataGrid grid) return;
 
-    private async void MessagesGrid_DoubleTapped(object sender, TappedEventArgs e)
-    {
-        var grid = sender as DataGrid;
-        var mainWindowViewModel = DataContext as MainWindowViewModel;
+        if (DataContext is not MainWindowViewModel mainWindowViewModel) return;
 
-        if (grid?.SelectedItem == null)
+        if (grid.SelectedItem == null) return;
+
+        MessageDetailsWindowViewModel viewModal = new()
         {
-            return;
-        }
-
-        var viewModal = new MessageDetailsWindowViewModel
-        {
-            CurrentMessage = grid.SelectedItem as Message, 
+            CurrentMessage = grid.SelectedItem as Message,
             ConnectionString = mainWindowViewModel.ConnectionString,
             Subscription = mainWindowViewModel.CurrentSubscription,
             Queue = mainWindowViewModel.CurrentQueue
@@ -53,29 +50,26 @@ public class MainWindow : Window
 
     private void MessagesGrid_Tapped(object sender, TappedEventArgs e)
     {
-        var grid = sender as DataGrid;
-        var mainWindowViewModel = DataContext as MainWindowViewModel;
+        if (sender is not DataGrid grid) return;
+        if (DataContext is not MainWindowViewModel mainWindowViewModel) return;
 
-        if (grid.SelectedItem is Message message)
-        {
-            mainWindowViewModel.SetSelectedMessage(message);
-        }
+        if (grid.SelectedItem is Message message) mainWindowViewModel.SetSelectedMessage(message);
     }
 
-    private bool _isClearingSelection;
-    private async void TreeView_SelectionChanged(object sender, SelectionChangedEventArgs e)
+    // TODO: catch exceptions inside the method and log to console
+    private async void TreeView_SelectionChanged(object? sender, SelectionChangedEventArgs e)
     {
         if (_isClearingSelection) return;
 
-        var mainWindowViewModel = DataContext as MainWindowViewModel;
-        var treeView = sender as TreeView;
+        if (DataContext is not MainWindowViewModel mainWindowViewModel) return;
+        if (sender is not TreeView treeView) return;
 
         _isClearingSelection = true;
         ClearOtherSelections(treeView);
         mainWindowViewModel.ClearAllSelections();
         _isClearingSelection = false;
-            
-        var selectedItem = treeView.SelectedItems.Count > 0 ? treeView.SelectedItems[0] : null;
+
+        object? selectedItem = treeView.SelectedItems.Count > 0 ? treeView.SelectedItems[0] : null;
         if (selectedItem is ServiceBusSubscription selectedSubscription)
         {
             mainWindowViewModel.SetSelectedSubscription(selectedSubscription);
@@ -83,11 +77,8 @@ public class MainWindow : Window
             mainWindowViewModel.RefreshTabHeaders();
         }
 
-        if (selectedItem is ServiceBusTopic selectedTopic)
-        {
-            mainWindowViewModel.SetSelectedTopic(selectedTopic);
-        }
-            
+        if (selectedItem is ServiceBusTopic selectedTopic) mainWindowViewModel.SetSelectedTopic(selectedTopic);
+
         if (selectedItem is ServiceBusQueue selectedQueue)
         {
             mainWindowViewModel.SetSelectedQueue(selectedQueue);
@@ -98,16 +89,12 @@ public class MainWindow : Window
 
     private void ClearOtherSelections(TreeView currentTreeView)
     {
-        var tvQueues = this.FindControl<TreeView>("tvQueues");
-        var tvTopics = this.FindControl<TreeView>("tvTopics");
-        if (currentTreeView == tvQueues)
-        {
-            tvTopics.UnselectAll();
-        }
+        var tvQueues = this.FindControl<TreeView>("QueuesTreeView");
+        var tvTopics = this.FindControl<TreeView>("TopicsTreeView");
+        if (currentTreeView == tvQueues) tvTopics?.UnselectAll();
 
-        if (currentTreeView == tvTopics)
-        {
-            tvQueues.UnselectAll();
-        }
+        if (currentTreeView == tvTopics) tvQueues?.UnselectAll();
     }
+
+    private void InitializeComponent() => AvaloniaXamlLoader.Load(this);
 }

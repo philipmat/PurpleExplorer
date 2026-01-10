@@ -25,11 +25,12 @@
             <RowDefinition Height="*" />
             <RowDefinition Height="100" />
         </Grid.RowDefinitions>
-        
+
         <Grid Grid.Row="0" Grid.RowSpan="3" Background="#80000000" IsVisible="{Binding IsBusy}" ZIndex="100">
             <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center">
                 <ProgressBar IsIndeterminate="True" Width="200" Height="20" />
-                <TextBlock Text="Loading..." HorizontalAlignment="Center" Foreground="White" Margin="0,10,0,0" FontSize="18" FontWeight="Bold" />
+                <TextBlock Text="Loading..." HorizontalAlignment="Center" Foreground="White" Margin="0,10,0,0"
+                           FontSize="18" FontWeight="Bold" />
             </StackPanel>
         </Grid>
 
@@ -70,7 +71,7 @@
                 </StackPanel>
             </Button>
             <Button Name="TransferDlqMessagesButton" Classes="topButton"
-                    Command="{Binding TransferDeadletterMessagesCommand}">
+                    Command="{Binding TransferDeadLetterMessagesCommand}">
                 <StackPanel Orientation="Horizontal">
                     <i:Icon Value="fa-shuffle" />
                     <TextBlock VerticalAlignment="Center">Transfer DLQ</TextBlock>
@@ -83,7 +84,7 @@
                             <Binding Path="AppVersionText" />
                         </MultiBinding>
                     </TextBlock.Text>
-                </TextBlock>   
+                </TextBlock>
                 <Button HorizontalAlignment="Right" Command="{Binding ShowSettings}"
                         Classes="topButton">
                     <StackPanel Orientation="Horizontal">
@@ -97,109 +98,122 @@
         <DockPanel Grid.Column="0" Grid.Row="1" Dock="Left">
             <Grid>
                 <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="{Binding TopicListWidth, Mode=TwoWay, Converter={StaticResource GridLengthConverter}}" MinWidth="100" />
+                    <ColumnDefinition
+                        Width="{Binding TopicListWidth, Mode=TwoWay, Converter={StaticResource GridLengthConverter}}"
+                        MinWidth="100" />
                     <ColumnDefinition Width="5" />
                     <ColumnDefinition Width="*" />
                 </Grid.ColumnDefinitions>
-            <TabControl Grid.Column="0">
-                <TabItem Header="{Binding TopicTabHeader}">
-                    <DockPanel>
-                        <TextBox DockPanel.Dock="Top" Text="{Binding SearchText}" Watermark="Filter tree..." Margin="5">
-                            <TextBox.InnerRightContent>
-                                <CheckBox IsChecked="{Binding IsRegex}" Content="Regex" VerticalAlignment="Center" Margin="0,0,5,0" BorderThickness="0" Background="Transparent" />
-                            </TextBox.InnerRightContent>
-                        </TextBox>
-                        <TreeView SelectionChanged="TreeView_SelectionChanged" ItemsSource="{Binding FilteredConnectedServiceBuses}" Name="tvTopics">
-                        <TreeView.DataTemplates>
-                            <TreeDataTemplate DataType="models:ServiceBusResource" ItemsSource="{Binding Topics}">
-                                <StackPanel Orientation="Horizontal">
-                                    <i:Icon Value="fa-server" />
-                                    <TextBlock Margin="5, 4" VerticalAlignment="Center"
-                                               Text="{Binding Name}" />
-                                </StackPanel>
-                            </TreeDataTemplate>
-                            <TreeDataTemplate DataType="models:ServiceBusTopic" ItemsSource="{Binding Subscriptions}">
-                                <StackPanel Orientation="Horizontal">
-                                    <i:Icon Value="fa-bars" />
-                                    <TextBlock Margin="3,8" Text="{Binding Name}" />
-                                </StackPanel>
-                            </TreeDataTemplate>
-                            <DataTemplate DataType="models:ServiceBusSubscription">
-                                <StackPanel Orientation="Horizontal">
-                                    <i:Icon Value="fa-microchip" />
-                                    <TextBlock Margin="3,4">
-                                        <TextBlock.Text>
-                                            <MultiBinding StringFormat="{}{0}({1},{2})">
-                                                <Binding Path="Name" />
-                                                <Binding Path="MessageCount" />
-                                                <Binding Path="DlqCount" />
-                                            </MultiBinding>
-                                        </TextBlock.Text>
-                                    </TextBlock>
-                                </StackPanel>
-                            </DataTemplate>
-                        </TreeView.DataTemplates>
-                        <TreeView.Styles>
-                            <Style Selector="TreeViewItem">
-                                <Setter Property="IsExpanded" Value="True" />
-                            </Style>
-                        </TreeView.Styles>
-                    </TreeView>
-                    </DockPanel>
-                </TabItem>
-                <TabItem Header="{Binding QueueTabHeader}">
-                    <DockPanel>
-                        <TextBox DockPanel.Dock="Top" Text="{Binding SearchText}" Watermark="Filter tree..." Margin="5">
-                            <TextBox.InnerRightContent>
-                                <CheckBox IsChecked="{Binding IsRegex}" Content="Regex" VerticalAlignment="Center" Margin="0,0,5,0" BorderThickness="0" Background="Transparent" />
-                            </TextBox.InnerRightContent>
-                        </TextBox>
-                        <TreeView SelectionChanged="TreeView_SelectionChanged" ItemsSource="{Binding FilteredConnectedServiceBuses}" Name="tvQueues">
-                        <TreeView.DataTemplates>
-                            <TreeDataTemplate DataType="models:ServiceBusResource" ItemsSource="{Binding Queues}">
-                                <StackPanel Orientation="Horizontal">
-                                    <i:Icon Value="fa-server" />
-                                    <TextBlock Margin="5, 4" VerticalAlignment="Center"
-                                               Text="{Binding Name}" />
-                                </StackPanel>
-                            </TreeDataTemplate>
-                            <DataTemplate DataType="models:ServiceBusQueue">
-                                <StackPanel Orientation="Horizontal">
-                                    <i:Icon Value="fa-bars" />
-                                    <TextBlock Margin="3,7">
-                                        <TextBlock.Text>
-                                            <MultiBinding StringFormat="{}{0}({1},{2})">
-                                                <Binding Path="Name" />
-                                                <Binding Path="MessageCount" />
-                                                <Binding Path="DlqCount" />
-                                            </MultiBinding>
-                                        </TextBlock.Text>
-                                    </TextBlock>
-                                </StackPanel>
-                            </DataTemplate>
-                        </TreeView.DataTemplates>
-                        <TreeView.Styles>
-                            <Style Selector="TreeViewItem">
-                                <Setter Property="IsExpanded" Value="True" />
-                            </Style>
-                        </TreeView.Styles>
-                    </TreeView>
-                    </DockPanel>
-                </TabItem>
-            </TabControl>
+                <TabControl Grid.Column="0">
+                    <TabItem Header="{Binding TopicTabHeader}">
+                        <DockPanel>
+                            <TextBox DockPanel.Dock="Top" Text="{Binding SearchText}" Watermark="Filter tree..."
+                                     Margin="5">
+                                <TextBox.InnerRightContent>
+                                    <CheckBox IsChecked="{Binding IsRegex}" Content="Regex" VerticalAlignment="Center"
+                                              Margin="0,0,5,0" BorderThickness="0" Background="Transparent" />
+                                </TextBox.InnerRightContent>
+                            </TextBox>
+                            <TreeView SelectionChanged="TreeView_SelectionChanged"
+                                      ItemsSource="{Binding FilteredConnectedServiceBuses}" Name="TopicsTreeView">
+                                <TreeView.DataTemplates>
+                                    <TreeDataTemplate DataType="models:ServiceBusResource"
+                                                      ItemsSource="{Binding Topics}">
+                                        <StackPanel Orientation="Horizontal">
+                                            <i:Icon Value="fa-server" />
+                                            <TextBlock Margin="5, 4" VerticalAlignment="Center"
+                                                       Text="{Binding Name}" />
+                                        </StackPanel>
+                                    </TreeDataTemplate>
+                                    <TreeDataTemplate DataType="models:ServiceBusTopic"
+                                                      ItemsSource="{Binding Subscriptions}">
+                                        <StackPanel Orientation="Horizontal">
+                                            <i:Icon Value="fa-bars" />
+                                            <TextBlock Margin="3,8" Text="{Binding Name}" />
+                                        </StackPanel>
+                                    </TreeDataTemplate>
+                                    <DataTemplate DataType="models:ServiceBusSubscription">
+                                        <StackPanel Orientation="Horizontal">
+                                            <i:Icon Value="fa-microchip" />
+                                            <TextBlock Margin="3,4">
+                                                <TextBlock.Text>
+                                                    <MultiBinding StringFormat="{}{0}({1},{2})">
+                                                        <Binding Path="Name" />
+                                                        <Binding Path="MessageCount" />
+                                                        <Binding Path="DlqCount" />
+                                                    </MultiBinding>
+                                                </TextBlock.Text>
+                                            </TextBlock>
+                                        </StackPanel>
+                                    </DataTemplate>
+                                </TreeView.DataTemplates>
+                                <TreeView.Styles>
+                                    <Style Selector="TreeViewItem">
+                                        <Setter Property="IsExpanded" Value="True" />
+                                    </Style>
+                                </TreeView.Styles>
+                            </TreeView>
+                        </DockPanel>
+                    </TabItem>
+                    <TabItem Header="{Binding QueueTabHeader}">
+                        <DockPanel>
+                            <TextBox DockPanel.Dock="Top" Text="{Binding SearchText}" Watermark="Filter tree..."
+                                     Margin="5">
+                                <TextBox.InnerRightContent>
+                                    <CheckBox IsChecked="{Binding IsRegex}" Content="Regex" VerticalAlignment="Center"
+                                              Margin="0,0,5,0" BorderThickness="0" Background="Transparent" />
+                                </TextBox.InnerRightContent>
+                            </TextBox>
+                            <TreeView SelectionChanged="TreeView_SelectionChanged"
+                                      ItemsSource="{Binding FilteredConnectedServiceBuses}" Name="QueuesTreeView">
+                                <TreeView.DataTemplates>
+                                    <TreeDataTemplate DataType="models:ServiceBusResource"
+                                                      ItemsSource="{Binding Queues}">
+                                        <StackPanel Orientation="Horizontal">
+                                            <i:Icon Value="fa-server" />
+                                            <TextBlock Margin="5, 4" VerticalAlignment="Center"
+                                                       Text="{Binding Name}" />
+                                        </StackPanel>
+                                    </TreeDataTemplate>
+                                    <DataTemplate DataType="models:ServiceBusQueue">
+                                        <StackPanel Orientation="Horizontal">
+                                            <i:Icon Value="fa-bars" />
+                                            <TextBlock Margin="3,7">
+                                                <TextBlock.Text>
+                                                    <MultiBinding StringFormat="{}{0}({1},{2})">
+                                                        <Binding Path="Name" />
+                                                        <Binding Path="MessageCount" />
+                                                        <Binding Path="DlqCount" />
+                                                    </MultiBinding>
+                                                </TextBlock.Text>
+                                            </TextBlock>
+                                        </StackPanel>
+                                    </DataTemplate>
+                                </TreeView.DataTemplates>
+                                <TreeView.Styles>
+                                    <Style Selector="TreeViewItem">
+                                        <Setter Property="IsExpanded" Value="True" />
+                                    </Style>
+                                </TreeView.Styles>
+                            </TreeView>
+                        </DockPanel>
+                    </TabItem>
+                </TabControl>
 
-            <GridSplitter Grid.Column="1" ResizeBehavior="PreviousAndNext" VerticalAlignment="Stretch" Width="4" />
+                <GridSplitter Grid.Column="1" ResizeBehavior="PreviousAndNext" VerticalAlignment="Stretch" Width="4" />
 
-            <TabControl Grid.Column="2">
-                <TabItem Header="{Binding MessagesTabHeader}" VerticalContentAlignment="Center">
-                    <DataGrid ItemsSource="{Binding Messages}" Tapped="MessagesGrid_Tapped"
-                              DoubleTapped="MessagesGrid_DoubleTapped"
-                              IsReadOnly="True" HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Auto"
-                              CanUserReorderColumns="True" CanUserResizeColumns="True">
+                <TabControl Grid.Column="2">
+                    <TabItem Header="{Binding MessagesTabHeader}" VerticalContentAlignment="Center">
+                        <DataGrid ItemsSource="{Binding Messages}" Tapped="MessagesGrid_Tapped"
+                                  DoubleTapped="MessagesGrid_DoubleTapped"
+                                  IsReadOnly="True" HorizontalScrollBarVisibility="Auto"
+                                  VerticalScrollBarVisibility="Auto"
+                                  CanUserReorderColumns="True" CanUserResizeColumns="True">
                             <DataGrid.Columns>
                                 <DataGridTextColumn Header="Sequence Number" Binding="{Binding SequenceNumber}" />
                                 <DataGridTextColumn Header="Message Id" Binding="{Binding MessageId}" />
-                                <DataGridTextColumn Header="Content" Binding="{Binding Content}" Width="500" MaxWidth="1000"/>
+                                <DataGridTextColumn Header="Content" Binding="{Binding Content}" Width="500"
+                                                    MaxWidth="1000" />
                                 <DataGridTextColumn Header="Label" Binding="{Binding Label}" />
                                 <DataGridTextColumn Header="Size" Binding="{Binding Size}" />
                                 <DataGridTextColumn Header="Delivery Count" Binding="{Binding DeliveryCount}" />
@@ -209,13 +223,13 @@
                     </TabItem>
                     <TabItem Header="{Binding DlqTabHeader}" VerticalContentAlignment="Center">
                         <DataGrid ItemsSource="{Binding DlqMessages}" Tapped="MessagesGrid_Tapped"
-                              DoubleTapped="MessagesGrid_DoubleTapped" IsReadOnly="True"
-                              CanUserReorderColumns="True" CanUserResizeColumns="True">
+                                  DoubleTapped="MessagesGrid_DoubleTapped" IsReadOnly="True"
+                                  CanUserReorderColumns="True" CanUserResizeColumns="True">
                             <DataGrid.Columns>
                                 <DataGridTextColumn Header="Sequence Number" Binding="{Binding SequenceNumber}" />
                                 <DataGridTextColumn Header="Message Id" Binding="{Binding MessageId}" />
                                 <DataGridTextColumn Header="Dead-letter reason" Binding="{Binding DeadLetterReason}" />
-                                <DataGridTextColumn Header="Label" Binding="{Binding Label}"  MaxWidth="1000"/>
+                                <DataGridTextColumn Header="Label" Binding="{Binding Label}" MaxWidth="1000" />
                                 <DataGridTextColumn Header="Size" Binding="{Binding Size}" />
                                 <DataGridTextColumn Header="Delivery Count" Binding="{Binding DeliveryCount}" />
                                 <DataGridTextColumn Header="Enqueue time (UTC)" Binding="{Binding EnqueueTimeUtc}" />
