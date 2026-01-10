@@ -43,127 +43,134 @@
         </Style>
     </Window.Styles>
 
-    <ScrollViewer>
-        <StackPanel Orientation="Vertical">
-            <DockPanel Height="30" LastChildFill="False">
-                <Button Name="MinusButton" Classes="topButton" IsEnabled="{Binding !!CurrentMessage}"
-                        Command="{Binding DeleteMessageCommand}"
-                        CommandParameter="{Binding #messageDetailsWindow}">
-                    <StackPanel Orientation="Horizontal">
-                        <!-- <DrawingPresenter Drawing="{DynamicResource Material.Delete}" /> -->
-                        <TextBlock VerticalAlignment="Center">Delete message</TextBlock>
-                    </StackPanel>
-                </Button>
-                <Button Command="{Binding DeadletterMessageCommand}"
-                        IsVisible="{Binding !CurrentMessage.IsDlq}"
-                        Classes="topButton">
-                    <StackPanel Orientation="Horizontal">
-                        <!-- <DrawingPresenter Drawing="{DynamicResource Material.EmailSend}" /> -->
-                        <TextBlock VerticalAlignment="Center">Send to dead-letter</TextBlock>
-                    </StackPanel>
-                </Button>
-                <Button Name="ResendButton" Command="{Binding ResubmitMessageCommand}"
-                        IsVisible="{Binding !!CurrentMessage.IsDlq}"
-                        Classes="topButton">
-                    <StackPanel Orientation="Horizontal">
-                        <!-- <DrawingPresenter Drawing="{DynamicResource Material.EmailSend}" /> -->
-                        <TextBlock VerticalAlignment="Center">Resubmit back to topic</TextBlock>
-                    </StackPanel>
-                </Button>
-                <Button Command="{Binding CloseWindowCommand}"
-                        CommandParameter="{Binding #messageDetailsWindow}"
-                        HotKey="Ctrl+W"
-                        DockPanel.Dock="Right"
-                        Classes="topButton">
-                    <StackPanel Orientation="Horizontal" Spacing="5">
-                        <i:Icon Value="fa-rectangle-xmark" />
-                        <TextBlock VerticalAlignment="Center">Close</TextBlock>
-                    </StackPanel>
-                </Button>
-            </DockPanel>
+    <DockPanel>
+        <DockPanel DockPanel.Dock="Top" Height="30" LastChildFill="False">
+            <Button Name="MinusButton" Classes="topButton" IsEnabled="{Binding !!CurrentMessage}"
+                    Command="{Binding DeleteMessageCommand}"
+                    CommandParameter="{Binding #messageDetailsWindow}">
+                <StackPanel Orientation="Horizontal">
+                    <!-- <DrawingPresenter Drawing="{DynamicResource Material.Delete}" /> -->
+                    <TextBlock VerticalAlignment="Center">Delete message</TextBlock>
+                </StackPanel>
+            </Button>
+            <Button Command="{Binding DeadletterMessageCommand}"
+                    IsVisible="{Binding !CurrentMessage.IsDlq}"
+                    Classes="topButton">
+                <StackPanel Orientation="Horizontal">
+                    <!-- <DrawingPresenter Drawing="{DynamicResource Material.EmailSend}" /> -->
+                    <TextBlock VerticalAlignment="Center">Send to dead-letter</TextBlock>
+                </StackPanel>
+            </Button>
+            <Button Name="ResendButton" Command="{Binding ResubmitMessageCommand}"
+                    IsVisible="{Binding !!CurrentMessage.IsDlq}"
+                    Classes="topButton">
+                <StackPanel Orientation="Horizontal">
+                    <!-- <DrawingPresenter Drawing="{DynamicResource Material.EmailSend}" /> -->
+                    <TextBlock VerticalAlignment="Center">Resubmit back to topic</TextBlock>
+                </StackPanel>
+            </Button>
+            <Button Command="{Binding CloseWindowCommand}"
+                    CommandParameter="{Binding #messageDetailsWindow}"
+                    HotKey="Ctrl+W"
+                    DockPanel.Dock="Right"
+                    Classes="topButton">
+                <StackPanel Orientation="Horizontal" Spacing="5">
+                    <i:Icon Value="fa-rectangle-xmark" />
+                    <TextBlock VerticalAlignment="Center">Close</TextBlock>
+                </StackPanel>
+            </Button>
+        </DockPanel>
 
-            <Border BorderBrush="LightGray" BorderThickness="1,1,1,0" Margin="0,5">
-                <Grid MinHeight="600" VerticalAlignment="Top" ShowGridLines="False">
-                    <Grid.RowDefinitions>
-                        <RowDefinition Height="Auto" />
-                        <RowDefinition Height="Auto" />
-                        <RowDefinition Height="*" />
-                        <RowDefinition Height="Auto" />
-                        <RowDefinition Height="Auto" />
-                        <RowDefinition Height="Auto" />
-                        <RowDefinition Height="Auto" />
-                        <RowDefinition Height="Auto" />
-                        <RowDefinition Height="Auto" />
-                        <RowDefinition Height="Auto" />
-                    </Grid.RowDefinitions>
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="150" />
-                        <ColumnDefinition Width="*" />
-                    </Grid.ColumnDefinitions>
+        <ScrollViewer>
+            <StackPanel Orientation="Vertical">
+                <Border BorderBrush="LightGray" BorderThickness="1,1,1,0" Margin="0,5">
+                    <Grid MinHeight="600" VerticalAlignment="Top" ShowGridLines="False">
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="*" />
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="Auto" />
+                        </Grid.RowDefinitions>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="150" MinWidth="50" />
+                            <ColumnDefinition Width="4" />
+                            <ColumnDefinition Width="*" />
+                        </Grid.ColumnDefinitions>
 
-                    <!-- Grid Lines -->
-                    <Border Grid.Row="0" Grid.RowSpan="10" Grid.Column="0" BorderBrush="LightGray" BorderThickness="0,0,1,0" HorizontalAlignment="Right" />
-                    <Border Grid.Row="0" Grid.ColumnSpan="2" BorderBrush="LightGray" BorderThickness="0,0,0,1" VerticalAlignment="Bottom" />
-                    <Border Grid.Row="1" Grid.ColumnSpan="2" BorderBrush="LightGray" BorderThickness="0,0,0,1" VerticalAlignment="Bottom" />
-                    <Border Grid.Row="2" Grid.ColumnSpan="2" BorderBrush="LightGray" BorderThickness="0,0,0,1" VerticalAlignment="Bottom" />
-                    <Border Grid.Row="3" Grid.ColumnSpan="2" BorderBrush="LightGray" BorderThickness="0,0,0,1" VerticalAlignment="Bottom" />
-                    <Border Grid.Row="4" Grid.ColumnSpan="2" BorderBrush="LightGray" BorderThickness="0,0,0,1" VerticalAlignment="Bottom" />
-                    <Border Grid.Row="5" Grid.ColumnSpan="2" BorderBrush="LightGray" BorderThickness="0,0,0,1" VerticalAlignment="Bottom" />
-                    <Border Grid.Row="6" Grid.ColumnSpan="2" BorderBrush="LightGray" BorderThickness="0,0,0,1" VerticalAlignment="Bottom" />
-                    <Border Grid.Row="7" Grid.ColumnSpan="2" BorderBrush="LightGray" BorderThickness="0,0,0,1" VerticalAlignment="Bottom" />
-                    <Border Grid.Row="8" Grid.ColumnSpan="2" BorderBrush="LightGray" BorderThickness="0,0,0,1" VerticalAlignment="Bottom" />
-                    <Border Grid.Row="9" Grid.ColumnSpan="2" BorderBrush="LightGray" BorderThickness="0,0,0,1" VerticalAlignment="Bottom" IsVisible="{Binding CurrentMessage.IsDlq}" />
+                        <!-- Grid Splitter -->
+                        <GridSplitter Grid.Column="1" Grid.Row="0" Grid.RowSpan="10" 
+                                      Width="4" HorizontalAlignment="Stretch" Background="Transparent" />
 
-                    <TextBlock Text="MessageId" Classes="left" Grid.Row="0" Grid.Column="0" />
-                    <SelectableTextBlock Name="MessageId" Grid.Row="0" Grid.Column="1" Text="{Binding CurrentMessage.MessageId}" Classes="right" />
+                        <!-- Grid Lines -->
+                        <Border Grid.Row="0" Grid.RowSpan="10" Grid.Column="0" BorderBrush="LightGray" BorderThickness="0,0,1,0" HorizontalAlignment="Right" />
+                        <Border Grid.Row="0" Grid.ColumnSpan="3" BorderBrush="LightGray" BorderThickness="0,0,0,1" VerticalAlignment="Bottom" />
+                        <Border Grid.Row="1" Grid.ColumnSpan="3" BorderBrush="LightGray" BorderThickness="0,0,0,1" VerticalAlignment="Bottom" />
+                        <Border Grid.Row="2" Grid.ColumnSpan="3" BorderBrush="LightGray" BorderThickness="0,0,0,1" VerticalAlignment="Bottom" />
+                        <Border Grid.Row="3" Grid.ColumnSpan="3" BorderBrush="LightGray" BorderThickness="0,0,0,1" VerticalAlignment="Bottom" />
+                        <Border Grid.Row="4" Grid.ColumnSpan="3" BorderBrush="LightGray" BorderThickness="0,0,0,1" VerticalAlignment="Bottom" />
+                        <Border Grid.Row="5" Grid.ColumnSpan="3" BorderBrush="LightGray" BorderThickness="0,0,0,1" VerticalAlignment="Bottom" />
+                        <Border Grid.Row="6" Grid.ColumnSpan="3" BorderBrush="LightGray" BorderThickness="0,0,0,1" VerticalAlignment="Bottom" />
+                        <Border Grid.Row="7" Grid.ColumnSpan="3" BorderBrush="LightGray" BorderThickness="0,0,0,1" VerticalAlignment="Bottom" />
+                        <Border Grid.Row="8" Grid.ColumnSpan="3" BorderBrush="LightGray" BorderThickness="0,0,0,1" VerticalAlignment="Bottom" />
+                        <Border Grid.Row="9" Grid.ColumnSpan="3" BorderBrush="LightGray" BorderThickness="0,0,0,1" VerticalAlignment="Bottom" IsVisible="{Binding CurrentMessage.IsDlq}" />
 
-                    <TextBlock Text="Content Type" Classes="left" Grid.Row="1" Grid.Column="0" />
-                    <TextBlock Grid.Row="1" Grid.Column="1" Text="{Binding CurrentMessage.ContentType}" Classes="right" />
+                        <TextBlock Text="MessageId" Classes="left" Grid.Row="0" Grid.Column="0" />
+                        <SelectableTextBlock Name="MessageId" Grid.Row="0" Grid.Column="2" Text="{Binding CurrentMessage.MessageId}" Classes="right" />
 
-                    <TextBlock Text="Content" Grid.Row="2" Classes="left" Grid.Column="0" />
-                    <TextBox Grid.Row="2" Grid.Column="1" IsReadOnly="True" Name="ContentTextBlock" 
-                      TextWrapping="Wrap" AcceptsReturn="True"
-                      Text="{Binding CurrentMessage.Content}" />
+                        <TextBlock Text="Content Type" Classes="left" Grid.Row="1" Grid.Column="0" />
+                        <TextBlock Grid.Row="1" Grid.Column="2" Text="{Binding CurrentMessage.ContentType}" Classes="right" />
 
-                    <TextBlock Grid.Row="3" Grid.Column="0" Classes="left" Text="Sequence Number" />
-                    <SelectableTextBlock Grid.Row="3" Grid.Column="1" Classes="right" Text="{Binding CurrentMessage.SequenceNumber}" />
+                        <TextBlock Text="Content" Grid.Row="2" Classes="left" Grid.Column="0" />
+                        <TextBox Grid.Row="2" Grid.Column="2" IsReadOnly="True" Name="ContentTextBlock" 
+                          TextWrapping="Wrap" AcceptsReturn="True" MinHeight="200"
+                          Text="{Binding CurrentMessage.Content}" />
 
-                    <TextBlock Grid.Row="4" Grid.Column="0" Classes="left" Text="Size" />
-                    <TextBlock Grid.Row="4" Grid.Column="1" Classes="right" Text="{Binding CurrentMessage.Size}" />
+                        <TextBlock Grid.Row="3" Grid.Column="0" Classes="left" Text="Sequence Number" />
+                        <SelectableTextBlock Grid.Row="3" Grid.Column="2" Classes="right" Text="{Binding CurrentMessage.SequenceNumber}" />
 
-                    <TextBlock Grid.Row="5" Grid.Column="0" Classes="left" Text="Delivery Count" />
-                    <TextBlock Grid.Row="5" Grid.Column="1" Classes="right" Text="{Binding CurrentMessage.DeliveryCount}" />
+                        <TextBlock Grid.Row="4" Grid.Column="0" Classes="left" Text="Size" />
+                        <TextBlock Grid.Row="4" Grid.Column="2" Classes="right" Text="{Binding CurrentMessage.Size}" />
 
-                    <TextBlock Grid.Row="6" Grid.Column="0" Classes="left" Text="Correlation Id" />
-                    <SelectableTextBlock Grid.Row="6" Grid.Column="1" Classes="right" Text="{Binding CurrentMessage.CorrelationId}" />
+                        <TextBlock Grid.Row="5" Grid.Column="0" Classes="left" Text="Delivery Count" />
+                        <TextBlock Grid.Row="5" Grid.Column="2" Classes="right" Text="{Binding CurrentMessage.DeliveryCount}" />
 
-                    <TextBlock Grid.Row="7" Grid.Column="0" Classes="left" Text="Time To Live" />
-                    <TextBlock Grid.Row="7" Grid.Column="1" Classes="right" Text="{Binding CurrentMessage.TimeToLive}" />
+                        <TextBlock Grid.Row="6" Grid.Column="0" Classes="left" Text="Correlation Id" />
+                        <SelectableTextBlock Grid.Row="6" Grid.Column="2" Classes="right" Text="{Binding CurrentMessage.CorrelationId}" />
 
-                    <TextBlock Grid.Row="8" Grid.Column="0" Classes="left" Text="Enqueued Time (UTC)" />
-                    <SelectableTextBlock Grid.Row="8" Grid.Column="1" Classes="right" Text="{Binding CurrentMessage.EnqueueTimeUtc}" />
+                        <TextBlock Grid.Row="7" Grid.Column="0" Classes="left" Text="Time To Live" />
+                        <TextBlock Grid.Row="7" Grid.Column="2" Classes="right" Text="{Binding CurrentMessage.TimeToLive}" />
 
-                    <TextBlock Grid.Row="9" Grid.Column="0" Classes="left" Text="DLQ Reason" 
-                               IsVisible="{Binding CurrentMessage.IsDlq}"
-                               VerticalAlignment="Top"
-                               />
-                    <SelectableTextBlock Grid.Row="9" Grid.Column="1" Classes="right"
-                               IsVisible="{Binding CurrentMessage.IsDlq}"
-                               Text="{Binding CurrentMessage.DeadLetterReason}" 
-                               TextWrapping="Wrap" Height="NaN" MinHeight="20"
-                               />
-                </Grid>
-            </Border>
-            <TextBlock Text="Application Properties" FontWeight="Bold" Margin="5,10,0,5" />
-            <DataGrid ItemsSource="{Binding CurrentMessage.ApplicationProperties}" IsReadOnly="True"
-                      CanUserResizeColumns="True"
-                      GridLinesVisibility="All"
-                      HorizontalAlignment="Stretch">
-                <DataGrid.Columns>
-                    <DataGridTextColumn Header="Key" Binding="{Binding Key}" Width="150" />
-                    <DataGridTextColumn Header="Value" Binding="{Binding Value}" Width="*" />
-                </DataGrid.Columns>
-            </DataGrid>
-        </StackPanel>
-    </ScrollViewer>
+                        <TextBlock Grid.Row="8" Grid.Column="0" Classes="left" Text="Enqueued Time (UTC)" />
+                        <SelectableTextBlock Grid.Row="8" Grid.Column="2" Classes="right" Text="{Binding CurrentMessage.EnqueueTimeUtc}" />
+
+                        <TextBlock Grid.Row="9" Grid.Column="0" Classes="left" Text="DLQ Reason" 
+                                   IsVisible="{Binding CurrentMessage.IsDlq}"
+                                   VerticalAlignment="Top"
+                                   />
+                        <SelectableTextBlock Grid.Row="9" Grid.Column="2" Classes="right"
+                                   IsVisible="{Binding CurrentMessage.IsDlq}"
+                                   Text="{Binding CurrentMessage.DeadLetterReason}" 
+                                   TextWrapping="Wrap" Height="NaN" MinHeight="20"
+                                   />
+                    </Grid>
+                </Border>
+                <TextBlock Text="Application Properties" FontWeight="Bold" Margin="5,10,0,5" />
+                <DataGrid ItemsSource="{Binding CurrentMessage.ApplicationProperties}" IsReadOnly="True"
+                          CanUserResizeColumns="True"
+                          GridLinesVisibility="All"
+                          HorizontalAlignment="Stretch">
+                    <DataGrid.Columns>
+                        <DataGridTextColumn Header="Key" Binding="{Binding Key}" Width="150" />
+                        <DataGridTextColumn Header="Value" Binding="{Binding Value}" Width="*" />
+                    </DataGrid.Columns>
+                </DataGrid>
+            </StackPanel>
+        </ScrollViewer>
+    </DockPanel>
 </Window>
