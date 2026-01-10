@@ -76,7 +76,7 @@
                     <RowDefinition Height="20" />
                     <RowDefinition Height="20" />
                     <RowDefinition Height="20" />
-                    <RowDefinition Height="20" />
+                    <RowDefinition Height="Auto" MinHeight="20" />
                 </Grid.RowDefinitions>
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="150" />
@@ -114,10 +114,13 @@
 
                 <TextBlock Grid.Row="9" Grid.Column="0" Classes="left" Text="DLQ Reason" 
                            IsVisible="{Binding Message.IsDlq}"
+                           VerticalAlignment="Top"
                            />
                 <SelectableTextBlock Grid.Row="9" Grid.Column="1" Classes="right"
                            IsVisible="{Binding Message.IsDlq}"
-                           Text="{Binding Message.DeadLetterReason}" />
+                           Text="{Binding Message.DeadLetterReason}" 
+                           TextWrapping="Wrap" Height="NaN" MinHeight="20"
+                           />
             </Grid>
             <TextBlock Text="Application Properties" FontWeight="Bold" Margin="5,10,0,5" />
             <DataGrid ItemsSource="{Binding Message.ApplicationProperties}" IsReadOnly="True"
