@@ -428,6 +428,11 @@ $RECYCLE.BIN/
 ##
 .vscode/
 
+# ignore root-level app settings since they may contain sensitive data
+/appstate.json
+
 # backup app settings
 /appstate.json.backup
 /appstate-bak.json
+/appstate.json.broken
+
