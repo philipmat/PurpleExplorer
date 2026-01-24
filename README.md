@@ -28,10 +28,10 @@ You need to have [.NET 8](https://dotnet.microsoft.com/en-us/download/dotnet/8.0
 To build and run the project:
 
 1. Clone the repository.
-2. Navigate to the project directory.
-3. Run `dotnet build` to build the project.
-4. Run `dotnet run --project PurpleExplorer/PurpleExplorer.csproj` to run the application,
-   or after building, `dotnet run PurpleExplorer/bin/Debug/net8.0/PurpleExplorer.dll`.
+2. Navigate to the root of the repo.
+3. Run `dotnet run --project PurpleExplorer/PurpleExplorer.csproj` to run the application;
+   or after building with `dotnet build`,
+   run `dotnet run PurpleExplorer/bin/Debug/net8.0/PurpleExplorer.dll`.
 
 ## Recent Changes
 
