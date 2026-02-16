@@ -51,5 +51,6 @@ Since forking from the original project, the following significant updates have 
 * (editorconfig, better naming).
 * Added key bindings and buttons for closing windows.
 * Fixed various bugs including null reference exceptions, timeout issues, and app state handling.
+* Added support for [ASB emulator](https://learn.microsoft.com/en-us/azure/service-bus-messaging/test-locally-with-service-bus-emulator?tabs=docker-linux-container) with dual ports setup when `UseDevelopmentEmulator=true` flag is set.
 
 For a full list of changes, see the git commit history.
