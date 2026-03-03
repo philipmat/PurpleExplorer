@@ -7,6 +7,11 @@
         "$type": "PurpleExplorer.Models.ServiceBusConnectionString, PurpleExplorer",
         "UseManagedIdentity": false,
         "ConnectionString": "Endpoint=sb://your-service-bus.servicebus.windows.net/;SharedAccessKeyName=RootManageSharedAccessKey;SharedAccessKey=YourSharedAccessKey="
+      },
+      {
+        "$type": "PurpleExplorer.Models.ServiceBusConnectionString, PurpleExplorer",
+        "UseManagedIdentity": false,
+        "ConnectionString": "Endpoint=sb://localhost;SharedAccessKeyName=RootManageSharedAccessKey;SharedAccessKey=SAS_KEY_VALUE;UseDevelopmentEmulator=true;"
       }
     ]
   },
@@ -19,6 +24,7 @@
     "QueueListFetchCount": 100,
     "QueueMessageFetchCount": 100,
     "TopicListFetchCount": 100,
-    "TopicMessageFetchCount": 100
+    "TopicMessageFetchCount": 100,
+    "TopicListWidth": 400.0
   }
 }
