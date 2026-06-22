@@ -201,9 +201,7 @@ public class TopicHelper(AppSettings appSettings) : BaseHelper, ITopicHelper
             if (messages == null || messages.Count == 0) break;
 
             IEnumerable<AzureMessage> messagesToSend = messages.Select(m => new AzureMessage(m));
-            await sender.SendMessagesAsync(messagesToSend);
-
-            transferredCount += messages.Count;
+            transferredCount += await SendMessagesInBatches(sender, messagesToSend);
         }
 
         return transferredCount;

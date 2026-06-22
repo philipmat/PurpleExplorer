@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Threading.Tasks;
 using Azure.Identity;
 using Azure.Messaging.ServiceBus;
 using Azure.Messaging.ServiceBus.Administration;
@@ -54,6 +56,57 @@ public abstract class BaseHelper
             return new ServiceBusClient(messagingConnectionString, new DefaultAzureCredential());
 
         return new ServiceBusClient(messagingConnectionString);
+    }
+
+    /// <summary>
+    /// Sends messages in size-safe batches. The Service Bus SDK rejects a single send whose combined
+    /// payload exceeds the entity's maximum message size (e.g. 262144 bytes on the Standard tier), so we
+    /// pack messages into <see cref="ServiceBusMessageBatch"/> instances and flush each one as it fills.
+    /// Returns the number of messages that were actually sent.
+    /// </summary>
+    protected static async Task<int> SendMessagesInBatches(
+        ServiceBusSender sender,
+        IEnumerable<ServiceBusMessage> messages)
+    {
+        var sentCount = 0;
+        ServiceBusMessageBatch batch = await sender.CreateMessageBatchAsync();
+        try
+        {
+            foreach (ServiceBusMessage message in messages)
+            {
+                if (batch.TryAddMessage(message)) continue;
+
+                // The message did not fit. Flush the current batch (if any) and start a fresh one.
+                if (batch.Count > 0)
+                {
+                    await sender.SendMessagesAsync(batch);
+                    sentCount += batch.Count;
+                    batch.Dispose();
+                    batch = await sender.CreateMessageBatchAsync();
+                }
+
+                // Retry against the now-empty batch. If it still does not fit, this single message
+                // exceeds the entity's maximum message size and cannot be transferred.
+                if (!batch.TryAddMessage(message))
+                {
+                    throw new ServiceBusException(
+                        $"Message '{message.MessageId}' is too large to fit in a single batch and cannot be transferred.",
+                        ServiceBusFailureReason.MessageSizeExceeded);
+                }
+            }
+
+            if (batch.Count > 0)
+            {
+                await sender.SendMessagesAsync(batch);
+                sentCount += batch.Count;
+            }
+        }
+        finally
+        {
+            batch.Dispose();
+        }
+
+        return sentCount;
     }
 
     private string GetManagementConnectionString(string? connectionString)
