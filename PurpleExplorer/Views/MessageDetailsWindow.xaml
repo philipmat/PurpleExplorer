@@ -8,7 +8,7 @@
         xmlns:vm="clr-namespace:PurpleExplorer.ViewModels;assembly=PurpleExplorer"
         xmlns:i="clr-namespace:Projektanker.Icons.Avalonia;assembly=Projektanker.Icons.Avalonia"
         Title="Message Details" Icon="/Assets/avalonia-logo.ico"
-        Width="680" Height="630"
+        Width="680" Height="800"
         Focusable="True"
         WindowStartupLocation="CenterOwner">
 
@@ -181,9 +181,10 @@
                     </Grid>
                 </Border>
                 <TextBlock Text="Application Properties" FontWeight="Bold" Margin="5,10,0,5" />
-                <DataGrid ItemsSource="{Binding CurrentMessage.ApplicationProperties}" IsReadOnly="True"
+                <DataGrid ItemsSource="{Binding CurrentMessage.ApplicationPropertiesList}" IsReadOnly="True"
                           CanUserResizeColumns="True"
                           GridLinesVisibility="All"
+                          MinHeight="100"
                           HorizontalAlignment="Stretch">
                     <DataGrid.Columns>
                         <DataGridTextColumn Header="Key" Binding="{Binding Key}" Width="150" />

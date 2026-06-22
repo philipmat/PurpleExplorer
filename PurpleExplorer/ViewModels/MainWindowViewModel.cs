@@ -769,7 +769,7 @@ public class MainWindowViewModel : ViewModelBase
     public void SetSelectedMessage(Message message)
     {
         CurrentMessage = message;
-        LoggingService.Log("Message selected: " + message.MessageId);
+        LoggingService.Log($"Message selected: {message.MessageId} (Application properties: {message.ApplicationProperties.Count})" );
     }
 
     public void SetSelectedQueue(ServiceBusQueue selectedQueue)

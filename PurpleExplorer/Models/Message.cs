@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using Azure.Messaging.ServiceBus;
 
 namespace PurpleExplorer.Models;
@@ -37,5 +38,8 @@ public class Message
     public DateTimeOffset EnqueueTimeUtc { get; set; }
     public string DeadLetterReason { get; set; }
     public bool IsDlq { get; }
+
     public IReadOnlyDictionary<string, object> ApplicationProperties { get; set; }
+
+    public IEnumerable<KeyValuePair<string, object>> ApplicationPropertiesList => ApplicationProperties?.ToList();
 }
