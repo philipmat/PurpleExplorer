@@ -236,11 +236,11 @@
                             <DataGrid.Columns>
                                 <DataGridTextColumn Header="Sequence Number" Binding="{Binding SequenceNumber}" />
                                 <DataGridTextColumn Header="Message Id" Binding="{Binding MessageId}" />
+                                <DataGridTextColumn Header="Enqueue time (UTC)" Binding="{Binding EnqueueTimeUtc}" />
                                 <DataGridTextColumn Header="Dead-letter reason" Binding="{Binding DeadLetterReason}" />
                                 <DataGridTextColumn Header="Label" Binding="{Binding Label}" MaxWidth="1000" />
                                 <DataGridTextColumn Header="Size" Binding="{Binding Size}" />
                                 <DataGridTextColumn Header="Delivery Count" Binding="{Binding DeliveryCount}" />
-                                <DataGridTextColumn Header="Enqueue time (UTC)" Binding="{Binding EnqueueTimeUtc}" />
                                 <DataGridTextColumn Header="Content" Binding="{Binding Content}" />
                             </DataGrid.Columns>
                         </DataGrid>
