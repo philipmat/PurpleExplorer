@@ -14,4 +14,9 @@
     <Style Selector="Button.topButton TextBlock">
         <Setter Property="Margin" Value="0,1,0,0" />
     </Style>
+    <Style Selector="Button.topButton.active">
+        <Setter Property="Background" Value="#30FFFFFF" />
+        <Setter Property="BorderBrush" Value="{DynamicResource SystemAccentColor}" />
+        <Setter Property="BorderThickness" Value="1" />
+    </Style>
 </Styles>

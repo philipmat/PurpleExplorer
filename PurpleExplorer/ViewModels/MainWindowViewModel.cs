@@ -36,6 +36,7 @@ public class MainWindowViewModel : ViewModelBase
     private string? _dlqTabHeader;
     private bool _isBusy;
     private bool _isRegex;
+    private bool _showDlqOnly;
     private string? _messageTabHeader;
     private string? _queueTabHeader;
     private string? _searchText;
@@ -65,6 +66,7 @@ public class MainWindowViewModel : ViewModelBase
         PurgeMessagesCommand = ReactiveCommand.CreateFromTask<string>(PurgeMessages, canExecuteQueueLevelAction);
         TransferDeadLetterMessagesCommand =
             ReactiveCommand.CreateFromTask(TransferDeadletterMessages, canExecuteQueueLevelAction);
+        ToggleShowDlqCommand = ReactiveCommand.Create(() => { ShowDlqOnly = !ShowDlqOnly; });
 
         RefreshTabHeaders();
 
@@ -135,6 +137,16 @@ public class MainWindowViewModel : ViewModelBase
         }
     }
 
+    public bool ShowDlqOnly
+    {
+        get => _showDlqOnly;
+        set
+        {
+            this.RaiseAndSetIfChanged(ref _showDlqOnly, value);
+            FilterTree();
+        }
+    }
+
     public ServiceBusSubscription? CurrentSubscription
     {
         get => _currentSubscription;
@@ -187,6 +199,7 @@ public class MainWindowViewModel : ViewModelBase
     public ReactiveCommand<Unit, Unit> AddMessageCommand { get; }
     public ReactiveCommand<string, Unit> PurgeMessagesCommand { get; }
     public ReactiveCommand<Unit, Unit> TransferDeadLetterMessagesCommand { get; }
+    public ReactiveCommand<Unit, Unit> ToggleShowDlqCommand { get; }
 
     private async Task CheckForNewVersion()
     {
@@ -680,21 +693,21 @@ public class MainWindowViewModel : ViewModelBase
                 };
 
                 foreach (ServiceBusSubscription subscription in topic.Subscriptions)
-                    if (topicMatches || Matches(subscription.Name))
+                    if ((topicMatches || Matches(subscription.Name)) && (!ShowDlqOnly || subscription.DlqCount > 0))
                         filteredTopic.AddSubscriptions(subscription);
 
-                if ((filteredTopic.Subscriptions.Count > 0) || topicMatches)
+                if (filteredTopic.Subscriptions.Count > 0 || (topicMatches && !ShowDlqOnly))
                     filteredResource.AddTopics(filteredTopic);
             }
 
             // Filter Queues
             foreach (ServiceBusQueue queue in serviceBusResource.Queues)
-                if (resourceMatches || Matches(queue.Name))
+                if ((resourceMatches || Matches(queue.Name)) && (!ShowDlqOnly || queue.DlqCount > 0))
                     filteredResource.AddQueues(queue);
 
             if ((filteredResource.Topics.Count > 0) ||
                 (filteredResource.Queues.Count > 0) ||
-                resourceMatches)
+                (resourceMatches && !ShowDlqOnly))
                 FilteredConnectedServiceBuses.Add(filteredResource);
         }
     }

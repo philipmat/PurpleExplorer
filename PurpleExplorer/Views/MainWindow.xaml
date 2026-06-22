@@ -77,6 +77,14 @@
                     <TextBlock VerticalAlignment="Center">Transfer DLQ</TextBlock>
                 </StackPanel>
             </Button>
+            <Button Name="ShowDlqButton" Classes="topButton"
+                    Classes.active="{Binding ShowDlqOnly}"
+                    Command="{Binding ToggleShowDlqCommand}">
+                <StackPanel Orientation="Horizontal">
+                    <i:Icon Value="fa-triangle-exclamation" />
+                    <TextBlock VerticalAlignment="Center">Show DLQ</TextBlock>
+                </StackPanel>
+            </Button>
             <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" VerticalAlignment="Center">
                 <TextBlock Margin="0,3,10,0" TextAlignment="Right">
                     <TextBlock.Text>
