@@ -29,6 +29,31 @@ public class AddMessageWindow : Window
         }
     }
 
+    public void BtnAddProperty(object? sender, RoutedEventArgs e)
+    {
+        if (DataContext is not AddMessageWindowViewModal dataContext) return;
+        var newProperty = new ApplicationProperty();
+        dataContext.ApplicationProperties.Add(newProperty);
+
+        var dataGrid = this.FindControl<DataGrid>("dgApplicationProperties");
+        if (dataGrid == null) return;
+
+        Avalonia.Threading.Dispatcher.UIThread.Post(() =>
+        {
+            dataGrid.SelectedItem = newProperty;
+            dataGrid.CurrentColumn = dataGrid.Columns[0];
+            dataGrid.BeginEdit();
+        });
+    }
+
+    public void BtnRemoveProperty(object? sender, RoutedEventArgs e)
+    {
+        if (DataContext is not AddMessageWindowViewModal dataContext) return;
+        var dataGrid = this.FindControl<DataGrid>("dgApplicationProperties");
+        if (dataGrid?.SelectedItem is not ApplicationProperty selected) return;
+        dataContext.ApplicationProperties.Remove(selected);
+    }
+
     public void BtnDeleteMessage(object sender, RoutedEventArgs e)
     {
         if (DataContext is not AddMessageWindowViewModal dataContext) return;

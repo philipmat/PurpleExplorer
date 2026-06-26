@@ -490,6 +490,13 @@ public class MainWindowViewModel : ViewModelBase
         string? messageText = returnedViewModal.Message?.Trim();
         if (string.IsNullOrEmpty(messageText)) return;
 
+        var message = new ServiceBusMessage(messageText);
+        foreach (var prop in returnedViewModal.ApplicationProperties)
+        {
+            if (!string.IsNullOrWhiteSpace(prop.Key))
+                message.ApplicationProperties[prop.Key] = prop.Value;
+        }
+
         try
         {
             IsBusy = true;
@@ -499,7 +506,7 @@ public class MainWindowViewModel : ViewModelBase
                 ServiceBusConnectionString? connectionString = CurrentTopic.ServiceBus?.ConnectionString;
                 if (connectionString != null)
                 {
-                    await _topicHelper.SendMessage(connectionString, CurrentTopic.Name, messageText);
+                    await _topicHelper.SendMessage(connectionString, CurrentTopic.Name, message);
                 }
             }
 
@@ -508,7 +515,7 @@ public class MainWindowViewModel : ViewModelBase
                 ServiceBusConnectionString? connectionString = CurrentQueue.ServiceBus?.ConnectionString;
                 if (connectionString != null)
                 {
-                    await _queueHelper.SendMessage(connectionString, CurrentQueue.Name, messageText);
+                    await _queueHelper.SendMessage(connectionString, CurrentQueue.Name, message);
                 }
             }
 

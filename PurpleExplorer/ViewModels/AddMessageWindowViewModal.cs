@@ -14,6 +14,7 @@ public class AddMessageWindowViewModal : DialogViewModelBase
     {
         IAppState appState1 = appState ?? Locator.Current.GetService<IAppState>()!;
         SavedMessages = appState1.SavedMessages;
+        ApplicationProperties = new ObservableCollection<ApplicationProperty>();
     }
 
     public string? Message
@@ -29,6 +30,8 @@ public class AddMessageWindowViewModal : DialogViewModelBase
     }
 
     public ObservableCollection<SavedMessage> SavedMessages { get; set; }
+
+    public ObservableCollection<ApplicationProperty> ApplicationProperties { get; set; }
 
     public void SaveMessage()
     {

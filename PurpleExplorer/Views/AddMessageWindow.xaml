@@ -3,10 +3,10 @@
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:viewModels="clr-namespace:PurpleExplorer.ViewModels"
-        mc:Ignorable="d" d:DesignWidth="620" d:DesignHeight="480"
+        mc:Ignorable="d" d:DesignWidth="620" d:DesignHeight="680"
         x:Class="PurpleExplorer.Views.AddMessageWindow"
         Title="Send message" Icon="/Assets/purple-explorer.ico"
-        Width="620" Height="480"
+        Width="620" Height="680"
         WindowStartupLocation="CenterOwner">
 
     <Design.DataContext>
@@ -15,16 +15,22 @@
 
     <Grid Margin="5">
         <Grid.RowDefinitions>
-            <RowDefinition Height="*" />
+            <RowDefinition Height="*" MinHeight="120" />
             <RowDefinition Height="40" />
-            <RowDefinition Height="*" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="2*" MinHeight="90" />
+            <RowDefinition Height="40" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="3*" MinHeight="80" />
             <RowDefinition Height="40" />
         </Grid.RowDefinitions>
 
-        <TextBox MinHeight="180" HorizontalAlignment="Stretch" VerticalAlignment="Stretch"
+        <!-- Message body -->
+        <TextBox MinHeight="120" HorizontalAlignment="Stretch" VerticalAlignment="Stretch"
                  FontFamily="Microsoft YaHei,Simsun,苹方-简,宋体-简"
                  TextWrapping="Wrap" Text="{Binding Path=Message, Mode=TwoWay}" />
 
+        <!-- Send / Save buttons -->
         <StackPanel Grid.Row="1" Margin="0,5,0,5" Orientation="Horizontal" HorizontalAlignment="Stretch">
             <Button MinWidth="200" Height="30" HorizontalAlignment="Stretch" VerticalAlignment="Center"
                     IsEnabled="{Binding Message, Converter={x:Static StringConverters.IsNotNullOrEmpty}}"
@@ -47,7 +53,39 @@
                      TextWrapping="Wrap" Text="{Binding Path=Title, Mode=TwoWay}" Watermark="Save message with title:" />
         </StackPanel>
 
-        <DataGrid Grid.Row="2" Name="dgSavedMessages" ItemsSource="{Binding Path=SavedMessages, Mode=TwoWay}"
+        <!-- Application Properties label -->
+        <TextBlock Grid.Row="2" Margin="0,4,0,2" FontWeight="SemiBold" Text="Application Properties" />
+
+        <!-- Application Properties DataGrid -->
+        <DataGrid Grid.Row="3" Name="dgApplicationProperties"
+                  ItemsSource="{Binding Path=ApplicationProperties}"
+                  IsReadOnly="False"
+                  GridLinesVisibility="All"
+                  HorizontalGridLinesBrush="#33888888"
+                  VerticalGridLinesBrush="#33888888">
+            <DataGrid.Columns>
+                <DataGridTextColumn Header="Key" Binding="{Binding Key}" Width="*" />
+                <DataGridTextColumn Header="Value" Binding="{Binding Value}" Width="*" />
+            </DataGrid.Columns>
+        </DataGrid>
+
+        <!-- Application Properties Add / Remove buttons -->
+        <StackPanel Grid.Row="4" Margin="0,5,0,0" Orientation="Horizontal">
+            <Button Width="120" Height="30" VerticalAlignment="Center"
+                    Click="BtnAddProperty">
+                Add Property
+            </Button>
+            <Button Width="140" Height="30" Margin="5,0,0,0" VerticalAlignment="Center"
+                    Click="BtnRemoveProperty">
+                Remove Property
+            </Button>
+        </StackPanel>
+
+        <!-- Saved Messages label -->
+        <TextBlock Grid.Row="5" Margin="0,4,0,2" FontWeight="SemiBold" Text="Saved Messages" />
+
+        <!-- Saved Messages DataGrid -->
+        <DataGrid Grid.Row="6" Name="dgSavedMessages" ItemsSource="{Binding Path=SavedMessages, Mode=TwoWay}"
                   SelectionChanged="MessageSelectionChanged"
                   IsReadOnly="True">
             <DataGrid.Columns>
@@ -55,7 +93,7 @@
             </DataGrid.Columns>
         </DataGrid>
 
-        <Button Grid.Row="3" Width="200" Height="30" Margin="0,5,0,0" HorizontalAlignment="Left"
+        <Button Grid.Row="7" Width="200" Height="30" Margin="0,5,0,0" HorizontalAlignment="Left"
                 VerticalAlignment="Center"
                 Click="BtnDeleteMessage">
             Remove
