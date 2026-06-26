@@ -71,6 +71,9 @@ public class AddMessageWindow : Window
 
         dataContext.Message = selectedMessage.Message;
         dataContext.Title = selectedMessage.Title;
+        dataContext.ApplicationProperties.Clear();
+        foreach (var prop in selectedMessage.ApplicationProperties)
+            dataContext.ApplicationProperties.Add(new ApplicationProperty { Key = prop.Key, Value = prop.Value });
     }
 
     private void InitializeComponent() => AvaloniaXamlLoader.Load(this);

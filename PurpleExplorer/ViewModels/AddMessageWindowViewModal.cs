@@ -41,7 +41,8 @@ public class AddMessageWindowViewModal : DialogViewModelBase
         SavedMessage newMessage = new SavedMessage
         {
             Message = Message,
-            Title = Title
+            Title = Title,
+            ApplicationProperties = [..ApplicationProperties]
         };
         SavedMessages.Add(newMessage);
     }
