@@ -7,7 +7,7 @@
         xmlns:vm="clr-namespace:PurpleExplorer.ViewModels;assembly=PurpleExplorer"
         xmlns:i="clr-namespace:Projektanker.Icons.Avalonia;assembly=Projektanker.Icons.Avalonia"
         x:DataType="vm:ConnectionStringWindowViewModel"
-        Title="Connect to Service Bus" Icon="/Assets/avalonia-logo.ico"
+        Title="Connect to Service Bus" Icon="/Assets/purple-explorer.ico"
         Width="610" Height="510"
         WindowStartupLocation="CenterOwner">
 
