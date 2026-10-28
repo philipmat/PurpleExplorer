@@ -1,4 +1,5 @@
-﻿using System.Threading.Tasks;
+using System;
+using System.Threading.Tasks;
 using System.Windows.Input;
 using Avalonia.Controls;
 using MsBox.Avalonia.Enums;
@@ -26,7 +27,7 @@ public class MessageDetailsWindowViewModel : ViewModelBase
         _topicHelper = topicHelper ?? Locator.Current.GetService<ITopicHelper>()!;
         _queueHelper = queueHelper ?? Locator.Current.GetService<IQueueHelper>()!;
 
-        DeleteMessageCommand = ReactiveCommand.Create<Window>(DeleteMessage);
+        DeleteMessageCommand = ReactiveCommand.CreateFromTask<Window>(DeleteMessage);
         CloseWindowCommand = ReactiveCommand.Create<Window>(CloseWindow);
         ResubmitMessageCommand = ReactiveCommand.CreateFromTask(ResubmitMessage);
         DeadLetterMessageCommand = ReactiveCommand.CreateFromTask(DeadLetterMessage);
@@ -47,7 +48,9 @@ public class MessageDetailsWindowViewModel : ViewModelBase
         init => this.RaiseAndSetIfChanged(ref _currentMessage, value);
     }
 
-    private async void DeleteMessage(Window window)
+    public bool MessageDeleted { get; private set; }
+
+    private async Task DeleteMessage(Window window)
     {
         if (CurrentMessage is null) return;
         if (ConnectionString is null) return;
@@ -80,42 +83,57 @@ public class MessageDetailsWindowViewModel : ViewModelBase
             $"User accepted to receive messages in order to delete message {CurrentMessage.MessageId}. This is going to increases the DeliveryCount of the messages before it.");
         _loggingService.Log($"Deleting message {CurrentMessage.MessageId}... (might take some seconds)");
 
-        if (Subscription != null)
+        try
         {
-            ServiceBusConnectionString? connectionString = Subscription.Topic?.ServiceBus?.ConnectionString;
-            if (connectionString != null)
+            if (Subscription != null)
             {
-                await _topicHelper.DeleteMessage(
-                    connectionString,
-                    Subscription.Topic!.Name,
-                    Subscription.Name,
-                    CurrentMessage,
-                    CurrentMessage.IsDlq);
+                ServiceBusConnectionString? connectionString = Subscription.Topic?.ServiceBus?.ConnectionString;
+                if (connectionString == null)
+                    throw new InvalidOperationException("The subscription connection is no longer available.");
+                if (connectionString != null)
+                {
+                    await _topicHelper.DeleteMessage(
+                        connectionString,
+                        Subscription.Topic!.Name,
+                        Subscription.Name,
+                        CurrentMessage,
+                        CurrentMessage.IsDlq);
 
-                if (!CurrentMessage.IsDlq)
-                    Subscription.RemoveMessage(CurrentMessage.MessageId);
-                else
-                    Subscription.RemoveDlqMessage(CurrentMessage.MessageId);
+                    if (!CurrentMessage.IsDlq)
+                        Subscription.RemoveMessage(CurrentMessage.SequenceNumber);
+                    else
+                        Subscription.RemoveDlqMessage(CurrentMessage.SequenceNumber);
+                }
             }
-        }
 
-        if (Queue != null)
+            else if (Queue != null)
+            {
+                ServiceBusConnectionString? connectionString = Queue.ServiceBus?.ConnectionString;
+                if (connectionString == null)
+                    throw new InvalidOperationException("The queue connection is no longer available.");
+
+                if (connectionString != null)
+                {
+                    await _queueHelper.DeleteMessage(connectionString, Queue.Name, CurrentMessage, CurrentMessage.IsDlq);
+
+                    if (!CurrentMessage.IsDlq)
+                        Queue.RemoveMessage(CurrentMessage.SequenceNumber);
+                    else
+                        Queue.RemoveDlqMessage(CurrentMessage.SequenceNumber);
+                }
+            }
+            else
+                throw new InvalidOperationException("The message's queue or subscription is no longer available.");
+
+            _loggingService.Log($"Message deleted, MessageId: {CurrentMessage.MessageId}");
+            MessageDeleted = true;
+            window.Close();
+        }
+        catch (Exception ex)
         {
-            ServiceBusConnectionString? connectionString = Queue.ServiceBus?.ConnectionString;
-
-            if (connectionString != null)
-            {
-                await _queueHelper.DeleteMessage(connectionString, Queue.Name, CurrentMessage, CurrentMessage.IsDlq);
-
-                if (!CurrentMessage.IsDlq)
-                    Queue.RemoveMessage(CurrentMessage.MessageId);
-                else
-                    Queue.RemoveDlqMessage(CurrentMessage.MessageId);
-            }
+            _loggingService.Log($"Error deleting message: {ex.Message}");
+            await MessageBoxHelper.ShowError($"Could not delete the message: {ex.Message}");
         }
-
-        _loggingService.Log($"Message deleted, MessageId: {CurrentMessage.MessageId}");
-        window.Close();
     }
 
     private static void CloseWindow(Window window)

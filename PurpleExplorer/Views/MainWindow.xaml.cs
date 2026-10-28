@@ -46,6 +46,15 @@ public class MainWindow : Window
         };
 
         await ModalWindowHelper.ShowModalWindow<MessageDetailsWindow, MessageDetailsWindowViewModel>(viewModal);
+
+        if (viewModal.MessageDeleted && viewModal.CurrentMessage is { } deletedMessage)
+        {
+            if (deletedMessage.IsDlq)
+                mainWindowViewModel.DlqMessages.Remove(deletedMessage);
+            else
+                mainWindowViewModel.Messages.Remove(deletedMessage);
+            mainWindowViewModel.RefreshTabHeaders();
+        }
     }
 
     private void MessagesGrid_Tapped(object sender, TappedEventArgs e)

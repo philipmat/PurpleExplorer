@@ -135,13 +135,14 @@ public class TopicHelper(AppSettings appSettings) : BaseHelper, ITopicHelper
             if (messages == null || messages.Count == 0) break;
 
             ServiceBusReceivedMessage? foundMessage =
-                messages.FirstOrDefault(m => m.MessageId.Equals(message.MessageId));
+                messages.FirstOrDefault(m => m.SequenceNumber == message.SequenceNumber);
             if (foundMessage != null)
             {
                 await receiver.CompleteMessageAsync(foundMessage);
-                break;
+                return;
             }
         }
+        throw new InvalidOperationException("The selected message could not be found. Refresh the messages and try again.");
     }
 
     public async Task<long> PurgeMessages(

@@ -45,20 +45,22 @@ public abstract class MessageCollection : ReactiveObject
 
     public void AddMessages(IEnumerable<Message> messages) => Messages.AddRange(messages);
 
-    public void RemoveMessage(string messageId)
+    public void RemoveMessage(long sequenceNumber)
     {
-        Messages.Remove(Messages.Single(msg => msg.MessageId.Equals(messageId)));
-        MessageCount--;
+        Message? message = Messages.FirstOrDefault(msg => msg.SequenceNumber == sequenceNumber);
+        if (message != null && Messages.Remove(message) && MessageCount > 0)
+            MessageCount--;
     }
 
     public void ClearMessages() => Messages.Clear();
 
     public void AddDlqMessages(IEnumerable<Message> dlqMessages) => DlqMessages.AddRange(dlqMessages);
 
-    public void RemoveDlqMessage(string messageId)
+    public void RemoveDlqMessage(long sequenceNumber)
     {
-        DlqMessages.Remove(DlqMessages.Single(msg => msg.MessageId.Equals(messageId)));
-        DlqCount--;
+        Message? message = DlqMessages.FirstOrDefault(msg => msg.SequenceNumber == sequenceNumber);
+        if (message != null && DlqMessages.Remove(message) && DlqCount > 0)
+            DlqCount--;
     }
 
     public void ClearDlqMessages() => DlqMessages.Clear();
