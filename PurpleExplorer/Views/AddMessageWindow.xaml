@@ -89,7 +89,8 @@
                   SelectionChanged="MessageSelectionChanged"
                   IsReadOnly="True">
             <DataGrid.Columns>
-                <DataGridTextColumn Header="Title" Binding="{Binding Title}" />
+                <DataGridTextColumn Header="Title" Binding="{Binding Title}" Width="180" />
+                <DataGridTextColumn Header="Message" Binding="{Binding Message}" Width="*" />
             </DataGrid.Columns>
         </DataGrid>
 
