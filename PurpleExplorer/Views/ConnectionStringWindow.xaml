@@ -5,7 +5,7 @@
         mc:Ignorable="d" d:DesignWidth="610" d:DesignHeight="480"
         x:Class="PurpleExplorer.Views.ConnectionStringWindow"
         xmlns:vm="clr-namespace:PurpleExplorer.ViewModels;assembly=PurpleExplorer"
-        xmlns:i="clr-namespace:Projektanker.Icons.Avalonia;assembly=Projektanker.Icons.Avalonia"
+        xmlns:i="clr-namespace:PurpleExplorer.Controls"
         x:DataType="vm:ConnectionStringWindowViewModel"
         Title="Connect to Service Bus" Icon="/Assets/purple-explorer.ico"
         Width="610" Height="510"

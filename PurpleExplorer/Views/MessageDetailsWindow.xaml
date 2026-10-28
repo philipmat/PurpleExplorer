@@ -6,7 +6,7 @@
         x:Class="PurpleExplorer.Views.MessageDetailsWindow"
         x:Name="messageDetailsWindow"
         xmlns:vm="clr-namespace:PurpleExplorer.ViewModels;assembly=PurpleExplorer"
-        xmlns:i="clr-namespace:Projektanker.Icons.Avalonia;assembly=Projektanker.Icons.Avalonia"
+        xmlns:i="clr-namespace:PurpleExplorer.Controls"
         Title="Message Details" Icon="/Assets/purple-explorer.ico"
         Width="680" Height="800"
         Focusable="True"
