@@ -23,7 +23,9 @@ It's a simple tool to help you:
 ## How to run
 
 This project is provided only as source code.
-You need to have [.NET 8](https://dotnet.microsoft.com/en-us/download/dotnet/8.0) or later installed.
+
+You need to have [.NET 10](https://dotnet.microsoft.com/en-us/download/dotnet/10.0) or later installed.  
+It might work on earlier versions, but is not guaranteed.
 
 To build and run the project:
 
@@ -31,7 +33,7 @@ To build and run the project:
 2. Navigate to the root of the repo.
 3. Run `dotnet run --project PurpleExplorer/PurpleExplorer.csproj` to run the application;  
    or after building with `dotnet build`,
-   run `dotnet run PurpleExplorer/bin/Debug/net8.0/PurpleExplorer.dll`.
+   run `dotnet run PurpleExplorer/bin/Debug/net10.0/PurpleExplorer.dll`.
 
 ## Recent Changes
 
