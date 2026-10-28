@@ -34,12 +34,14 @@ public class App : Application
         //*/
 
         AutoSuspendHelper suspension = new(ApplicationLifetime!);
+        var suspensionDriver = new NewtonsoftJsonSuspensionDriver(appStatePath);
         RxApp.SuspensionHost.CreateNewAppState = () => new AppState();
-        RxApp.SuspensionHost.SetupDefaultSuspendResume(new NewtonsoftJsonSuspensionDriver(appStatePath));
+        RxApp.SuspensionHost.SetupDefaultSuspendResume(suspensionDriver);
         suspension.OnFrameworkInitializationCompleted();
         AppState state = RxApp.SuspensionHost.GetAppState<AppState>();
 
         Locator.CurrentMutable.RegisterLazySingleton(() => state, typeof(IAppState));
+        Locator.CurrentMutable.RegisterConstant(suspensionDriver, typeof(ISuspensionDriver));
         Locator.CurrentMutable.RegisterLazySingleton(() => new LoggingService(), typeof(ILoggingService));
         Locator.CurrentMutable.Register(() => new TopicHelper(state.AppSettings), typeof(ITopicHelper));
         Locator.CurrentMutable.Register(() => new QueueHelper(state.AppSettings), typeof(IQueueHelper));

@@ -1,4 +1,8 @@
+using System;
 using System.Collections.ObjectModel;
+using System.Reactive.Linq;
+using System.Threading.Tasks;
+using PurpleExplorer.Helpers;
 using PurpleExplorer.Models;
 using ReactiveUI;
 using Splat;
@@ -7,13 +11,17 @@ namespace PurpleExplorer.ViewModels;
 
 public class AddMessageWindowViewModal : DialogViewModelBase
 {
+    private readonly IAppState _appState;
+    private readonly ISuspensionDriver _suspensionDriver;
+
     private string? _message;
     private string? _title;
 
-    public AddMessageWindowViewModal(IAppState? appState = null)
+    public AddMessageWindowViewModal(IAppState? appState = null, ISuspensionDriver? suspensionDriver = null)
     {
-        IAppState appState1 = appState ?? Locator.Current.GetService<IAppState>()!;
-        SavedMessages = appState1.SavedMessages;
+        _appState = appState ?? Locator.Current.GetService<IAppState>()!;
+        _suspensionDriver = suspensionDriver ?? Locator.Current.GetService<ISuspensionDriver>()!;
+        SavedMessages = _appState.SavedMessages;
         ApplicationProperties = new ObservableCollection<ApplicationProperty>();
     }
 
@@ -33,9 +41,8 @@ public class AddMessageWindowViewModal : DialogViewModelBase
 
     public ObservableCollection<ApplicationProperty> ApplicationProperties { get; set; }
 
-    public void SaveMessage()
+    public async Task SaveMessage()
     {
-        // TODO: log to console
         if (string.IsNullOrWhiteSpace(Message) || string.IsNullOrWhiteSpace(Title)) return;
 
         SavedMessage newMessage = new SavedMessage
@@ -45,5 +52,15 @@ public class AddMessageWindowViewModal : DialogViewModelBase
             ApplicationProperties = [..ApplicationProperties]
         };
         SavedMessages.Add(newMessage);
+
+        try
+        {
+            await _suspensionDriver.SaveState(_appState);
+        }
+        catch (Exception ex)
+        {
+            SavedMessages.Remove(newMessage);
+            await MessageBoxHelper.ShowError($"Could not save the message: {ex.Message}");
+        }
     }
 }

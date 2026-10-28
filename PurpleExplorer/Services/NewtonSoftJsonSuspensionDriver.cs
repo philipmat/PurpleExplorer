@@ -9,6 +9,7 @@ namespace PurpleExplorer.Services;
 
 public class NewtonsoftJsonSuspensionDriver(string file) : ISuspensionDriver
 {
+    private readonly object _saveLock = new();
     private readonly JsonSerializerSettings _settings = new()
     {
         TypeNameHandling = TypeNameHandling.All,
@@ -73,23 +74,26 @@ public class NewtonsoftJsonSuspensionDriver(string file) : ISuspensionDriver
 
     public IObservable<Unit> SaveState(object state)
     {
-        string lines = JsonConvert.SerializeObject(state, _settings);
-        Console.WriteLine($"Saving state: will write {lines.Length} lines to {file}");
-
-        string backupFile = file + ".backup";
-        string tempFile = file + ".tmp";
-
-        try
+        lock (_saveLock)
         {
-            File.WriteAllText(tempFile, lines);
-            if (File.Exists(file)) File.Copy(file, backupFile, true);
-            File.Move(tempFile, file, true);
-        }
-        catch (Exception ex)
-        {
-            Console.WriteLine($"Error saving state: {ex.Message}");
-        }
+            try
+            {
+                string lines = JsonConvert.SerializeObject(state, _settings);
+                Console.WriteLine($"Saving state: will write {lines.Length} characters to {file}");
 
-        return Observable.Return(Unit.Default);
+                string backupFile = file + ".backup";
+                string tempFile = file + ".tmp";
+
+                File.WriteAllText(tempFile, lines);
+                if (File.Exists(file)) File.Copy(file, backupFile, true);
+                File.Move(tempFile, file, true);
+                return Observable.Return(Unit.Default);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error saving state: {ex.Message}");
+                return Observable.Throw<Unit>(ex);
+            }
+        }
     }
 }
