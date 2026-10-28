@@ -50,7 +50,7 @@
             </Button>
             <TextBox Height="30" MinWidth="200" HorizontalAlignment="Stretch" VerticalAlignment="Center"
                      IsEnabled="{Binding Message, Converter={x:Static StringConverters.IsNotNullOrEmpty}}"
-                     TextWrapping="Wrap" Text="{Binding Path=Title, Mode=TwoWay}" Watermark="Save message with title:" />
+                     TextWrapping="Wrap" Text="{Binding Path=Title, Mode=TwoWay}" PlaceholderText="Save message with title:" />
         </StackPanel>
 
         <!-- Application Properties label -->

@@ -115,7 +115,7 @@
                 <TabControl Grid.Column="0">
                     <TabItem Header="{Binding TopicTabHeader}">
                         <DockPanel>
-                            <TextBox DockPanel.Dock="Top" Text="{Binding SearchText}" Watermark="Filter tree..."
+                            <TextBox DockPanel.Dock="Top" Text="{Binding SearchText}" PlaceholderText="Filter tree..."
                                      Margin="5">
                                 <TextBox.InnerRightContent>
                                     <CheckBox IsChecked="{Binding IsRegex}" Content="Regex" VerticalAlignment="Center"
@@ -165,7 +165,7 @@
                     </TabItem>
                     <TabItem Header="{Binding QueueTabHeader}">
                         <DockPanel>
-                            <TextBox DockPanel.Dock="Top" Text="{Binding SearchText}" Watermark="Filter tree..."
+                            <TextBox DockPanel.Dock="Top" Text="{Binding SearchText}" PlaceholderText="Filter tree..."
                                      Margin="5">
                                 <TextBox.InnerRightContent>
                                     <CheckBox IsChecked="{Binding IsRegex}" Content="Regex" VerticalAlignment="Center"
@@ -251,7 +251,7 @@
 
         <DockPanel Grid.Column="0" Grid.Row="2" Dock="Bottom">
             <TextBox BorderThickness="0,3,0,0" HorizontalAlignment="Stretch" IsReadOnly="True" Name="LogBox"
-                     Watermark="logs ..." Text="{Binding LoggingService.Logs}" />
+                     PlaceholderText="logs ..." Text="{Binding LoggingService.Logs}" />
         </DockPanel>
     </Grid>
 </Window>
