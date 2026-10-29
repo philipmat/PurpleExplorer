@@ -770,6 +770,7 @@ public class MainWindowViewModel : ViewModelBase
         finally
         {
             IsBusy = false;
+            RefreshTabHeaders();
         }
     }
 
