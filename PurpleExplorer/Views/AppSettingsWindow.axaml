@@ -18,14 +18,17 @@
             <Setter Property="Padding" Value="0, 5, 0, 5" />
             <Setter Property="VerticalAlignment" Value="Center" />
             <Setter Property="HorizontalAlignment" Value="Left" />
+            <Setter Property="TextWrapping" Value="Wrap" />
         </Style>
         <Style Selector="NumericUpDown.right">
             <Setter Property="Padding" Value="0, 5, 0, 5" />
             <Setter Property="VerticalAlignment" Value="Center" />
+            <Setter Property="HorizontalAlignment" Value="Right" />
+            <Setter Property="Width" Value="120" />
         </Style>
     </Window.Styles>
 
-    <Grid ColumnDefinitions="250,*" RowDefinitions="Auto,Auto,Auto,Auto" Margin="4" VerticalAlignment="Top">
+    <Grid ColumnDefinitions="*,Auto" RowDefinitions="Auto,Auto,Auto,Auto" Margin="4" VerticalAlignment="Top">
         <TextBlock Text="How many queues to fetch from namespace" Grid.Row="0" Grid.Column="0" Classes="left" />
         <NumericUpDown Grid.Row="0" Grid.Column="1" Value="{Binding AppSettings.QueueListFetchCount}" Classes="right" />
 
