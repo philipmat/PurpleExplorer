@@ -125,13 +125,43 @@ public class QueueHelper(AppSettings appSettings) : BaseHelper, IQueueHelper
 
     public async Task ResubmitDlqMessage(ServiceBusConnectionString connectionString, string queue, Message message)
     {
-        ServiceBusReceivedMessage azureMessage =
-            await PeekDlqMessageBySequenceNumber(connectionString, queue, message.SequenceNumber);
-        var clonedMessage = new AzureMessage(azureMessage);
+        var path = $"{queue}/$DeadLetterQueue";
 
-        await SendMessage(connectionString, queue, clonedMessage);
+        await using ServiceBusClient client = GetServiceBusClient(connectionString);
+        await using ServiceBusReceiver receiver = client.CreateReceiver(
+            path,
+            new ServiceBusReceiverOptions { ReceiveMode = ServiceBusReceiveMode.PeekLock });
+        await using ServiceBusSender sender = client.CreateSender(queue);
 
-        await DeleteMessage(connectionString, queue, message, true);
+        while (true)
+        {
+            IReadOnlyList<ServiceBusReceivedMessage> messages =
+                await receiver.ReceiveMessagesAsync(appSettings.QueueMessageFetchCount);
+            if (messages.Count == 0) break;
+
+            ServiceBusReceivedMessage? foundMessage =
+                messages.FirstOrDefault(m => m.SequenceNumber == message.SequenceNumber);
+            if (foundMessage == null) continue;
+
+            var clonedMessage = new AzureMessage(foundMessage);
+            var sent = false;
+            try
+            {
+                await sender.SendMessageAsync(clonedMessage);
+                sent = true;
+                await receiver.CompleteMessageAsync(foundMessage);
+            }
+            catch (Exception ex) when (sent)
+            {
+                throw new InvalidOperationException(
+                    "The message was sent back to the queue, but the original DLQ message could not be confirmed as removed. Refresh the DLQ before retrying to avoid sending a duplicate.",
+                    ex);
+            }
+
+            return;
+        }
+
+        throw new InvalidOperationException("The selected message could not be found. Refresh the messages and try again.");
     }
 
     public async Task<long> PurgeMessages(ServiceBusConnectionString connectionString, string queue, bool isDlq)
@@ -198,25 +228,6 @@ public class QueueHelper(AppSettings appSettings) : BaseHelper, IQueueHelper
         {
             Name = runtimeInfo.Value.Name
         };
-    }
-
-    private async Task<ServiceBusReceivedMessage> PeekDlqMessageBySequenceNumber(
-        ServiceBusConnectionString connectionString,
-        string queue,
-        long sequenceNumber)
-    {
-        var deadletterPath = $"{queue}/$DeadLetterQueue";
-
-        await using ServiceBusClient client = GetServiceBusClient(connectionString);
-        ServiceBusReceiver? receiver = client.CreateReceiver(
-            deadletterPath,
-            new ServiceBusReceiverOptions
-            {
-                ReceiveMode = ServiceBusReceiveMode.PeekLock
-            });
-        ServiceBusReceivedMessage? azureMessage = await receiver.PeekMessageAsync(sequenceNumber);
-
-        return azureMessage;
     }
 
     private async Task<List<ServiceBusQueue>> GetQueues(ServiceBusAdministrationClient client)

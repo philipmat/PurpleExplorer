@@ -29,7 +29,7 @@ public class MessageDetailsWindowViewModel : ViewModelBase
 
         DeleteMessageCommand = ReactiveCommand.CreateFromTask<Window>(DeleteMessage);
         CloseWindowCommand = ReactiveCommand.Create<Window>(CloseWindow);
-        ResubmitMessageCommand = ReactiveCommand.CreateFromTask(ResubmitMessage);
+        ResubmitMessageCommand = ReactiveCommand.CreateFromTask<Window>(ResubmitMessage);
         DeadLetterMessageCommand = ReactiveCommand.CreateFromTask(DeadLetterMessage);
     }
 
@@ -142,22 +142,39 @@ public class MessageDetailsWindowViewModel : ViewModelBase
         window.Close();
     }
 
-    private async Task ResubmitMessage()
+    private async Task ResubmitMessage(Window window)
     {
         if (CurrentMessage is null) return;
         if (ConnectionString is null) return;
         _loggingService.Log($"Resending DLQ message: {CurrentMessage!.MessageId}");
 
-        if (Subscription is { Topic: not null })
-            await _topicHelper.ResubmitDlqMessage(
-                ConnectionString,
-                Subscription.Topic.Name,
-                Subscription.Name,
-                CurrentMessage!);
+        try
+        {
+            if (Subscription is { Topic: not null })
+                await _topicHelper.ResubmitDlqMessage(
+                    ConnectionString,
+                    Subscription.Topic.Name,
+                    Subscription.Name,
+                    CurrentMessage);
 
-        if (Queue != null) await _queueHelper.ResubmitDlqMessage(ConnectionString, Queue.Name, CurrentMessage!);
+            else if (Queue != null)
+                await _queueHelper.ResubmitDlqMessage(ConnectionString, Queue.Name, CurrentMessage);
+            else
+                throw new InvalidOperationException("The message's queue or subscription is no longer available.");
 
-        _loggingService.Log($"Resent DLQ message: {CurrentMessage.MessageId}");
+            _loggingService.Log($"Resent DLQ message: {CurrentMessage.MessageId}");
+            if (Subscription is not null)
+                Subscription.RemoveDlqMessage(CurrentMessage.SequenceNumber);
+            else if (Queue is not null)
+                Queue.RemoveDlqMessage(CurrentMessage.SequenceNumber);
+            MessageDeleted = true;
+            window.Close();
+        }
+        catch (Exception ex)
+        {
+            _loggingService.Log($"Error resubmitting message: {ex.Message}");
+            await MessageBoxHelper.ShowError($"Could not resubmit the message: {ex.Message}");
+        }
     }
 
     private async Task DeadLetterMessage()
@@ -181,15 +198,26 @@ public class MessageDetailsWindowViewModel : ViewModelBase
             $"User accepted to receive messages in order to send message {CurrentMessage.MessageId} to dead-letter. This is going to increases the DeliveryCount of the messages before it.");
         _loggingService.Log($"Sending message: {CurrentMessage.MessageId} to dead-letter");
 
-        if (Subscription is { Topic: not null })
-            await _topicHelper.DeadLetterMessage(
-                ConnectionString,
-                Subscription.Topic!.Name,
-                Subscription.Name,
-                CurrentMessage);
+        try
+        {
+            if (Subscription is { Topic: not null })
+                await _topicHelper.DeadLetterMessage(
+                    ConnectionString,
+                    Subscription.Topic.Name,
+                    Subscription.Name,
+                    CurrentMessage);
 
-        if (Queue != null) await _queueHelper.DeadletterMessage(ConnectionString, Queue.Name, CurrentMessage);
+            else if (Queue != null)
+                await _queueHelper.DeadletterMessage(ConnectionString, Queue.Name, CurrentMessage);
+            else
+                throw new InvalidOperationException("The message's queue or subscription is no longer available.");
 
-        _loggingService.Log($"Sent message: {CurrentMessage.MessageId} to dead-letter");
+            _loggingService.Log($"Sent message: {CurrentMessage.MessageId} to dead-letter");
+        }
+        catch (Exception ex)
+        {
+            _loggingService.Log($"Error sending message to dead-letter: {ex.Message}");
+            await MessageBoxHelper.ShowError($"Could not send the message to dead-letter: {ex.Message}");
+        }
     }
 }

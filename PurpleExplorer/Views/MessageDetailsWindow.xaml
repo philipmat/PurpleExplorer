@@ -66,6 +66,7 @@
                 </StackPanel>
             </Button>
             <Button Name="ResendButton" Command="{Binding ResubmitMessageCommand}"
+                    CommandParameter="{Binding #messageDetailsWindow}"
                     IsVisible="{Binding !!CurrentMessage.IsDlq}"
                     Classes="topButton">
                 <StackPanel Orientation="Horizontal">
