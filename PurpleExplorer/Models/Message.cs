@@ -41,5 +41,5 @@ public class Message
 
     public IReadOnlyDictionary<string, object> ApplicationProperties { get; set; }
 
-    public IEnumerable<KeyValuePair<string, object>> ApplicationPropertiesList => ApplicationProperties?.ToList();
+    public IEnumerable<KeyValuePair<string, object>> ApplicationPropertiesList => ApplicationProperties.ToList();
 }

@@ -36,7 +36,5 @@ public class ServiceBusResource
                CreatedTime.Equals(comparingResource.CreatedTime);
     }
 
-    // protected bool Equals(ServiceBusResource other) => Name == other.Name && CreatedTime.Equals(other.CreatedTime);
-
-    // public override int GetHashCode() => HashCode.Combine(Name ?? "Uknown", CreatedTime);
+    public override int GetHashCode() => HashCode.Combine(Name, CreatedTime);
 }

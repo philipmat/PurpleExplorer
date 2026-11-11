@@ -26,13 +26,13 @@ public class GithubRelease
     public int Id { get; set; }
 
     [JsonProperty("url")]
-    public string Url { get; set; }
+    public string Url { get; set; } = string.Empty;
 
     [JsonProperty("html_url")]
-    public string HtmlUrl { get; set; }
+    public string HtmlUrl { get; set; } = string.Empty;
 
     [JsonProperty("name")]
-    public string Name { get; set; }
+    public string Name { get; set; } = string.Empty;
 
     [JsonProperty("created_at")]
     public DateTime CreatedAt { get; set; }
