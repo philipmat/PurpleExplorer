@@ -71,7 +71,8 @@
                 </StackPanel>
             </Button>
             <Button Name="TransferDlqMessagesButton" Classes="topButton"
-                    Command="{Binding TransferDeadLetterMessagesCommand}">
+                    Command="{Binding TransferDeadLetterMessagesCommand}"
+                    CommandParameter="{Binding #DlqMessagesGrid.SelectedItems}">
                 <StackPanel Orientation="Horizontal">
                     <i:Icon Value="fa-shuffle" />
                     <TextBlock VerticalAlignment="Center">Transfer DLQ</TextBlock>
@@ -230,7 +231,8 @@
                         </DataGrid>
                     </TabItem>
                     <TabItem Header="{Binding DlqTabHeader}" VerticalContentAlignment="Center">
-                        <DataGrid ItemsSource="{Binding DlqMessages}" Tapped="MessagesGrid_Tapped"
+                        <DataGrid Name="DlqMessagesGrid" ItemsSource="{Binding DlqMessages}"
+                                  SelectionMode="Extended" Tapped="MessagesGrid_Tapped"
                                   DoubleTapped="MessagesGrid_DoubleTapped" IsReadOnly="True"
                                   CanUserReorderColumns="True" CanUserResizeColumns="True">
                             <DataGrid.Columns>

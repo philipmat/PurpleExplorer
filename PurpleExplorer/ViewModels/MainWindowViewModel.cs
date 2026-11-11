@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
@@ -65,7 +66,7 @@ public class MainWindowViewModel : ViewModelBase
         AddMessageCommand = ReactiveCommand.CreateFromTask(AddMessage, canExecuteQueueLevelAction);
         PurgeMessagesCommand = ReactiveCommand.CreateFromTask<string>(PurgeMessages, canExecuteQueueLevelAction);
         TransferDeadLetterMessagesCommand =
-            ReactiveCommand.CreateFromTask(TransferDeadletterMessages, canExecuteQueueLevelAction);
+            ReactiveCommand.CreateFromTask<IList?>(TransferDeadletterMessages, canExecuteQueueLevelAction);
         ToggleShowDlqCommand = ReactiveCommand.Create(() => { ShowDlqOnly = !ShowDlqOnly; });
 
         RefreshTabHeaders();
@@ -198,7 +199,7 @@ public class MainWindowViewModel : ViewModelBase
     public ReactiveCommand<Unit, Unit> RefreshCommand { get; }
     public ReactiveCommand<Unit, Unit> AddMessageCommand { get; }
     public ReactiveCommand<string, Unit> PurgeMessagesCommand { get; }
-    public ReactiveCommand<Unit, Unit> TransferDeadLetterMessagesCommand { get; }
+    public ReactiveCommand<IList?, Unit> TransferDeadLetterMessagesCommand { get; }
     public ReactiveCommand<Unit, Unit> ToggleShowDlqCommand { get; }
 
     private async Task CheckForNewVersion()
@@ -527,61 +528,72 @@ public class MainWindowViewModel : ViewModelBase
         }
     }
 
-    private async Task TransferDeadletterMessages()
+    private async Task TransferDeadletterMessages(IList? selectedItems)
     {
-        string? dlqPath = null;
-        string? transferTo = null;
-        if (_currentSubscription != null && _currentTopic != null)
-        {
-            transferTo = $"{_currentTopic.Name}/{_currentSubscription.Name}";
-            dlqPath = $"{transferTo}/$DeadLetterQueue";
-        }
+        // Snapshot before showing the dialog: grid selection changes as rows are removed.
+        List<Message> selectedMessages = selectedItems?.Cast<Message>().ToList() ?? [];
+        ServiceBusQueue? queue = CurrentQueue;
+        ServiceBusSubscription? subscription = CurrentSubscription;
+        ServiceBusTopic? topic = CurrentTopic;
+        ServiceBusConnectionString? connectionString = queue?.ServiceBus?.ConnectionString
+            ?? subscription?.Topic?.ServiceBus?.ConnectionString;
+        if (connectionString == null || (queue == null && (subscription == null || topic == null))) return;
 
-        if (_currentQueue != null)
+        string transferTo = queue != null ? queue.Name : $"{topic!.Name}/{subscription!.Name}";
+        string dlqPath = $"{transferTo}/$DeadLetterQueue";
+        string transferScope = selectedMessages.Count switch
         {
-            transferTo = $"{_currentQueue.Name}";
-            dlqPath = $"{transferTo}/$DeadLetterQueue";
-        }
-
+            0 => "ALL the messages",
+            1 => "the selected message",
+            _ => $"the {selectedMessages.Count} selected messages"
+        };
+        string selectionWarning = selectedMessages.Count > 0
+            ? "\nFinding selected messages can increase the delivery count of other DLQ messages."
+            : string.Empty;
         ButtonResult buttonResult = await MessageBoxHelper.ShowConfirmation(
             "Transferring messages from DLQ",
-            $"Are you sure you would like to transfer ALL the messages on {dlqPath} back to {transferTo}?");
+            $"Are you sure you would like to transfer {transferScope} on {dlqPath} back to {transferTo}?{selectionWarning}");
 
-        // Because buttonResult can be None or No
-        if (buttonResult != ButtonResult.Yes)
-        {
-            CurrentMessage = null;
-            return;
-        }
+        if (buttonResult != ButtonResult.Yes) return;
 
+        // A resource change while confirming must not transfer messages from another DLQ.
+        if (queue != CurrentQueue || subscription != CurrentSubscription || topic != CurrentTopic) return;
+
+        long transferCount = 0;
         try
         {
             IsBusy = true;
-            LoggingService.Log($"Transferring ALL messages in {dlqPath}... (might take some time)");
-            long transferCount = -1;
-            if (CurrentSubscription != null && CurrentTopic != null)
+            LoggingService.Log($"Transferring {transferScope} in {dlqPath}... (might take some time)");
+            if (selectedMessages.Count > 0)
             {
-                ServiceBusConnectionString? connectionString = CurrentSubscription.Topic?.ServiceBus?.ConnectionString;
-
-                if (connectionString != null)
+                foreach (Message message in selectedMessages)
                 {
-                    transferCount = await _topicHelper.TransferDlqMessages(
-                        connectionString,
-                        CurrentTopic.Name,
-                        CurrentSubscription.Name);
+                    if (queue != null)
+                        await _queueHelper.ResubmitDlqMessage(connectionString, queue.Name, message);
+                    else
+                        await _topicHelper.ResubmitDlqMessage(
+                            connectionString, topic!.Name, subscription!.Name, message);
+
+                    transferCount++;
+                    (queue as MessageCollection ?? subscription!).RemoveDlqMessage(message.SequenceNumber);
+                    DlqMessages.Remove(message);
+                    if (CurrentMessage == message) CurrentMessage = null;
+                    RefreshTabHeaders();
                 }
             }
-
-            if (CurrentQueue != null)
-            {
-                ServiceBusConnectionString? connectionString = CurrentQueue.ServiceBus?.ConnectionString;
-                if (connectionString != null)
-                {
-                    transferCount = await _queueHelper.TransferDlqMessages(connectionString, CurrentQueue.Name);
-                }
-            }
+            else if (queue != null)
+                transferCount = await _queueHelper.TransferDlqMessages(connectionString, queue.Name);
+            else
+                transferCount = await _topicHelper.TransferDlqMessages(
+                    connectionString, topic!.Name, subscription!.Name);
 
             LoggingService.Log($"Transferred {transferCount} messages in {dlqPath}");
+            await FetchMessages();
+        }
+        catch (Exception ex)
+        {
+            LoggingService.Log($"Error transferring messages in {dlqPath} after {transferCount} confirmed transfers: {ex.Message}");
+            await MessageBoxHelper.ShowError($"Could not finish transferring DLQ messages: {ex.Message}");
         }
         finally
         {
