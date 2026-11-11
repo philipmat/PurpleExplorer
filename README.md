@@ -44,13 +44,16 @@ Since forking from the original project, the following significant updates have 
   * filtering for the tree view;
   * improved message details window with DLQ reason display and application properties;
   * added spinner to indicate background operations.
+  * most details can be copied from windows (message body, DLQ reason, etc)
 * Improved connection management and user experience (taller connection box, alerts for existing connections, etc.).
-* Upgraded to .NET 8 for better performance and latest features.
-* Upgraded to latest Avalonia (v11) for improved UI framework capabilities.
+* Re-queues selected messages (or all if none selected)
+* Can show messages headers (application properties) and add headers to new  messages
+* Upgraded to .NET 10 for better performance and latest features.
+* Upgraded to latest Avalonia (v12) for improved UI framework capabilities.
 * Migrated to Azure.Messaging.ServiceBus for the latest Azure SDK.
 * Upgraded all dependencies to their latest versions.
 * Implemented comprehensive nullability fixes and code quality improvements
-* (editorconfig, better naming).
+* DX (editorconfig, better naming).
 * Added key bindings and buttons for closing windows.
 * Fixed various bugs including null reference exceptions, timeout issues, and app state handling.
 * Added support for [ASB emulator](https://learn.microsoft.com/en-us/azure/service-bus-messaging/test-locally-with-service-bus-emulator?tabs=docker-linux-container) with dual ports setup when `UseDevelopmentEmulator=true` flag is set.
