@@ -33,8 +33,9 @@ public class ServiceBusResource
     {
         var comparingResource = obj as ServiceBusResource;
         return comparingResource != null && string.Equals(Name, comparingResource.Name) &&
-               CreatedTime.Equals(comparingResource.CreatedTime);
+               CreatedTime.Equals(comparingResource.CreatedTime) &&
+               ReferenceEquals(ConnectionString, comparingResource.ConnectionString);
     }
 
-    public override int GetHashCode() => HashCode.Combine(Name, CreatedTime);
+    public override int GetHashCode() => HashCode.Combine(Name, CreatedTime, ConnectionString);
 }

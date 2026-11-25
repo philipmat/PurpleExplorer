@@ -11,6 +11,7 @@ namespace PurpleExplorer.Views;
 
 public class MainWindow : Window
 {
+    private MainWindowViewModel? _viewModel;
     private bool _isClearingSelection;
 
     public MainWindow()
@@ -20,6 +21,31 @@ public class MainWindow : Window
         this.AttachDevTools();
 #endif
         Opened += MainWindow_Opened;
+        DataContextChanged += MainWindow_DataContextChanged;
+    }
+
+    private void MainWindow_DataContextChanged(object? sender, EventArgs e)
+    {
+        if (_viewModel != null)
+            _viewModel.TreeSelectionInvalidated -= ClearTreeSelection;
+
+        _viewModel = DataContext as MainWindowViewModel;
+        if (_viewModel != null)
+            _viewModel.TreeSelectionInvalidated += ClearTreeSelection;
+    }
+
+    private void ClearTreeSelection(object? sender, EventArgs e)
+    {
+        _isClearingSelection = true;
+        try
+        {
+            this.FindControl<TreeView>("TopicsTreeView")?.UnselectAll();
+            this.FindControl<TreeView>("QueuesTreeView")?.UnselectAll();
+        }
+        finally
+        {
+            _isClearingSelection = false;
+        }
     }
 
     private void MainWindow_Opened(object? sender, EventArgs e)
@@ -79,6 +105,9 @@ public class MainWindow : Window
         _isClearingSelection = false;
 
         object? selectedItem = treeView.SelectedItems.Count > 0 ? treeView.SelectedItems[0] : null;
+        if (selectedItem is ServiceBusResource selectedServiceBus)
+            mainWindowViewModel.SetSelectedServiceBus(selectedServiceBus);
+
         if (selectedItem is ServiceBusSubscription selectedSubscription)
         {
             mainWindowViewModel.SetSelectedSubscription(selectedSubscription);

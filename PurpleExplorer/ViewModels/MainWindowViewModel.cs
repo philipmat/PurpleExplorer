@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
 using System.Reactive;
+using System.Reactive.Linq;
 using System.Reflection;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
@@ -31,7 +32,7 @@ public class MainWindowViewModel : ViewModelBase
     private MessageCollection? _currentMessageCollection;
 #pragma warning restore CS0169 // Field is never used
     private ServiceBusQueue? _currentQueue;
-
+    private ServiceBusConnectionString? _selectedServiceBusConnection;
     private ServiceBusSubscription? _currentSubscription;
     private ServiceBusTopic? _currentTopic;
     private string? _dlqTabHeader;
@@ -62,7 +63,8 @@ public class MainWindowViewModel : ViewModelBase
             (subscription, queue) => subscription != null || queue != null
         );
 
-        RefreshCommand = ReactiveCommand.CreateFromTask(Refresh, canExecuteQueueLevelAction);
+        RefreshCommand = ReactiveCommand.CreateFromTask(
+            Refresh, this.WhenAnyValue(x => x.SelectedServiceBusConnection).Select(connection => connection != null));
         AddMessageCommand = ReactiveCommand.CreateFromTask(AddMessage, canExecuteQueueLevelAction);
         PurgeMessagesCommand = ReactiveCommand.CreateFromTask<string>(PurgeMessages, canExecuteQueueLevelAction);
         TransferDeadLetterMessagesCommand =
@@ -159,6 +161,12 @@ public class MainWindowViewModel : ViewModelBase
         set => this.RaiseAndSetIfChanged(ref _currentTopic, value);
     }
 
+    private ServiceBusConnectionString? SelectedServiceBusConnection
+    {
+        get => _selectedServiceBusConnection;
+        set => this.RaiseAndSetIfChanged(ref _selectedServiceBusConnection, value);
+    }
+
     public Message? CurrentMessage
     {
         get => _currentMessage;
@@ -199,6 +207,8 @@ public class MainWindowViewModel : ViewModelBase
     public ReactiveCommand<Unit, Unit> AddMessageCommand { get; }
     public ReactiveCommand<string, Unit> PurgeMessagesCommand { get; }
     public ReactiveCommand<IList?, Unit> TransferDeadLetterMessagesCommand { get; }
+
+    public event EventHandler? TreeSelectionInvalidated;
 
     private async Task CheckForNewVersion()
     {
@@ -447,34 +457,6 @@ public class MainWindowViewModel : ViewModelBase
         }
     }
 
-    private async Task RefreshConnectedServiceBuses()
-    {
-        try
-        {
-            IsBusy = true;
-            foreach (ServiceBusResource serviceBusResource in ConnectedServiceBuses)
-            {
-                if (serviceBusResource.ConnectionString == null) continue;
-
-                IList<ServiceBusTopic> topicsAndSubscriptions =
-                    await _topicHelper.GetTopicsAndSubscriptions(serviceBusResource.ConnectionString);
-                IList<ServiceBusQueue> serviceBusQueues =
-                    await _queueHelper.GetQueues(serviceBusResource.ConnectionString);
-
-                serviceBusResource.Topics.Clear();
-                serviceBusResource.Queues.Clear();
-                serviceBusResource.AddTopics(topicsAndSubscriptions.ToArray());
-                serviceBusResource.AddQueues(serviceBusQueues.ToArray());
-            }
-
-            FilterTree();
-        }
-        finally
-        {
-            IsBusy = false;
-        }
-    }
-
     private async Task AddMessage()
     {
         var viewModal = new AddMessageWindowViewModal();
@@ -690,43 +672,87 @@ public class MainWindowViewModel : ViewModelBase
         FilteredConnectedServiceBuses.Clear();
 
         foreach (ServiceBusResource serviceBusResource in ConnectedServiceBuses)
+            FilterServiceBus(serviceBusResource);
+    }
+
+    private ServiceBusResource? FilterServiceBus(ServiceBusResource serviceBusResource)
+    {
+        ServiceBusResource? existingResource = FilteredConnectedServiceBuses.FirstOrDefault(
+            resource => ReferenceEquals(resource.ConnectionString, serviceBusResource.ConnectionString));
+        var filteredResource = existingResource ?? new ServiceBusResource
         {
-            bool resourceMatches = serviceBusResource.Name != null && Matches(serviceBusResource.Name);
-            var filteredResource = new ServiceBusResource
+            Name = serviceBusResource.Name,
+            CreatedTime = serviceBusResource.CreatedTime,
+            ConnectionString = serviceBusResource.ConnectionString
+        };
+        bool resourceMatches = serviceBusResource.Name != null && Matches(serviceBusResource.Name);
+        var visibleTopics = new List<ServiceBusTopic>();
+
+        foreach (ServiceBusTopic topic in serviceBusResource.Topics)
+        {
+            bool topicMatches = resourceMatches || Matches(topic.Name);
+            ServiceBusTopic filteredTopic = filteredResource.Topics.FirstOrDefault(item => item.Name == topic.Name)
+                ?? new ServiceBusTopic { Name = topic.Name, ServiceBus = filteredResource };
+            var visibleSubscriptions = topic.Subscriptions.Where(subscription =>
+                (topicMatches || Matches(subscription.Name)) && (!ShowDlqOnly || subscription.DlqCount > 0)).ToList();
+            foreach (ServiceBusSubscription subscription in visibleSubscriptions)
+                subscription.Topic = filteredTopic;
+
+            UpdateTreeItems(filteredTopic.Subscriptions, visibleSubscriptions, item => item.Name);
+            if (visibleSubscriptions.Count > 0 || (topicMatches && !ShowDlqOnly))
+                visibleTopics.Add(filteredTopic);
+        }
+
+        var visibleQueues = serviceBusResource.Queues.Where(queue =>
+            (resourceMatches || Matches(queue.Name)) && (!ShowDlqOnly || queue.DlqCount > 0)).ToList();
+        foreach (ServiceBusQueue queue in visibleQueues)
+            queue.ServiceBus = filteredResource;
+
+        UpdateTreeItems(filteredResource.Topics, visibleTopics, item => item.Name);
+        UpdateTreeItems(filteredResource.Queues, visibleQueues, item => item.Name);
+
+        if (visibleTopics.Count > 0 || visibleQueues.Count > 0 || (resourceMatches && !ShowDlqOnly))
+        {
+            if (existingResource == null)
+                FilteredConnectedServiceBuses.Add(filteredResource);
+            return filteredResource;
+        }
+
+        if (existingResource != null)
+            FilteredConnectedServiceBuses.Remove(existingResource);
+        return null;
+    }
+
+    // Keep existing tree items so Avalonia can retain their selection and expansion state.
+    private static void UpdateTreeItems<T>(
+        ObservableCollection<T> items, IList<T> updatedItems, Func<T, string> name, Action<T, T>? update = null)
+        where T : class
+    {
+        var updatedNames = updatedItems.Select(name).ToHashSet();
+        for (int index = items.Count - 1; index >= 0; index--)
+            if (!updatedNames.Contains(name(items[index])))
+                items.RemoveAt(index);
+
+        var existingItems = items.ToDictionary(name);
+        for (int index = 0; index < updatedItems.Count; index++)
+        {
+            T updatedItem = updatedItems[index];
+            if (!existingItems.TryGetValue(name(updatedItem), out T? existingItem))
             {
-                Name = serviceBusResource.Name,
-                CreatedTime = serviceBusResource.CreatedTime,
-                ConnectionString = serviceBusResource.ConnectionString
-            };
-
-            // Filter Topics and Subscriptions
-            foreach (ServiceBusTopic topic in serviceBusResource.Topics)
-            {
-                bool topicMatches = resourceMatches || Matches(topic.Name);
-                ServiceBusTopic filteredTopic = new()
-                {
-                    Name = topic.Name,
-                    ServiceBus = filteredResource
-                };
-
-                foreach (ServiceBusSubscription subscription in topic.Subscriptions)
-                    if ((topicMatches || Matches(subscription.Name)) && (!ShowDlqOnly || subscription.DlqCount > 0))
-                        filteredTopic.AddSubscriptions(subscription);
-
-                if (filteredTopic.Subscriptions.Count > 0 || (topicMatches && !ShowDlqOnly))
-                    filteredResource.AddTopics(filteredTopic);
+                items.Insert(index, updatedItem);
+                continue;
             }
 
-            // Filter Queues
-            foreach (ServiceBusQueue queue in serviceBusResource.Queues)
-                if ((resourceMatches || Matches(queue.Name)) && (!ShowDlqOnly || queue.DlqCount > 0))
-                    filteredResource.AddQueues(queue);
-
-            if ((filteredResource.Topics.Count > 0) ||
-                (filteredResource.Queues.Count > 0) ||
-                (resourceMatches && !ShowDlqOnly))
-                FilteredConnectedServiceBuses.Add(filteredResource);
+            update?.Invoke(existingItem, updatedItem);
+            if (!ReferenceEquals(items[index], existingItem))
+                items.Move(items.IndexOf(existingItem), index);
         }
+    }
+
+    private static void UpdateMessageCounts(MessageCollection target, MessageCollection source)
+    {
+        target.MessageCount = source.MessageCount;
+        target.DlqCount = source.DlqCount;
     }
 
     private bool Matches(string text)
@@ -748,12 +774,39 @@ public class MainWindowViewModel : ViewModelBase
 
     private async Task Refresh()
     {
+        ServiceBusConnectionString? connection = SelectedServiceBusConnection;
+        if (connection == null) return;
+
+        ServiceBusResource? serviceBusResource = ConnectedServiceBuses.FirstOrDefault(
+            resource => ReferenceEquals(resource.ConnectionString, connection));
+        if (serviceBusResource == null) return;
+
         try
         {
             IsBusy = true;
-            await RefreshConnectedServiceBuses();
+            IList<ServiceBusTopic> topics = await _topicHelper.GetTopicsAndSubscriptions(connection);
+            IList<ServiceBusQueue> queues = await _queueHelper.GetQueues(connection);
+
+            UpdateTreeItems(serviceBusResource.Topics, topics, topic => topic.Name, (existing, updated) =>
+                UpdateTreeItems(existing.Subscriptions, updated.Subscriptions, item => item.Name, UpdateMessageCounts));
+            UpdateTreeItems(serviceBusResource.Queues, queues, queue => queue.Name, UpdateMessageCounts);
+            ServiceBusResource? visibleResource = FilterServiceBus(serviceBusResource);
+            if (ReferenceEquals(connection, SelectedServiceBusConnection))
+            {
+                if (visibleResource == null ||
+                    (CurrentQueue != null && !visibleResource.Queues.Contains(CurrentQueue)) ||
+                    (CurrentTopic != null && !visibleResource.Topics.Contains(CurrentTopic)) ||
+                    (CurrentSubscription != null && CurrentTopic?.Subscriptions.Contains(CurrentSubscription) != true))
+                {
+                    ClearAllSelections();
+                    TreeSelectionInvalidated?.Invoke(this, EventArgs.Empty);
+                }
+                else if (CurrentMessageCollection != null)
+                {
+                    await FetchMessages();
+                }
+            }
             RefreshTabHeaders();
-            await FetchMessages();
         }
         finally
         {
@@ -788,12 +841,14 @@ public class MainWindowViewModel : ViewModelBase
     {
         CurrentSubscription = subscription;
         CurrentTopic = subscription.Topic;
+        SelectedServiceBusConnection = subscription.Topic?.ServiceBus?.ConnectionString;
         LoggingService.Log("Subscription selected: " + subscription.Name);
     }
 
     public void SetSelectedTopic(ServiceBusTopic selectedTopic)
     {
         CurrentTopic = selectedTopic;
+        SelectedServiceBusConnection = selectedTopic.ServiceBus?.ConnectionString;
         LoggingService.Log("Topic selected: " + selectedTopic.Name);
     }
 
@@ -806,14 +861,19 @@ public class MainWindowViewModel : ViewModelBase
     public void SetSelectedQueue(ServiceBusQueue selectedQueue)
     {
         CurrentQueue = selectedQueue;
+        SelectedServiceBusConnection = selectedQueue.ServiceBus?.ConnectionString;
         LoggingService.Log("Queue selected: " + selectedQueue.Name);
     }
+
+    public void SetSelectedServiceBus(ServiceBusResource serviceBus) =>
+        SelectedServiceBusConnection = serviceBus.ConnectionString;
 
     public async Task ShowSettings()
         => await ModalWindowHelper.ShowModalWindow<AppSettingsWindow>((AppState)_appState);
 
     public void ClearAllSelections()
     {
+        SelectedServiceBusConnection = null;
         CurrentSubscription = null;
         CurrentTopic = null;
         CurrentQueue = null;
