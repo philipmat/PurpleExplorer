@@ -67,7 +67,6 @@ public class MainWindowViewModel : ViewModelBase
         PurgeMessagesCommand = ReactiveCommand.CreateFromTask<string>(PurgeMessages, canExecuteQueueLevelAction);
         TransferDeadLetterMessagesCommand =
             ReactiveCommand.CreateFromTask<IList?>(TransferDeadletterMessages, canExecuteQueueLevelAction);
-        ToggleShowDlqCommand = ReactiveCommand.Create(() => { ShowDlqOnly = !ShowDlqOnly; });
 
         RefreshTabHeaders();
 
@@ -200,7 +199,6 @@ public class MainWindowViewModel : ViewModelBase
     public ReactiveCommand<Unit, Unit> AddMessageCommand { get; }
     public ReactiveCommand<string, Unit> PurgeMessagesCommand { get; }
     public ReactiveCommand<IList?, Unit> TransferDeadLetterMessagesCommand { get; }
-    public ReactiveCommand<Unit, Unit> ToggleShowDlqCommand { get; }
 
     private async Task CheckForNewVersion()
     {

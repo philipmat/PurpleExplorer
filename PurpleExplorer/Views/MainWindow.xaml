@@ -42,50 +42,52 @@
                     <TextBlock VerticalAlignment="Center">Connect</TextBlock>
                 </StackPanel>
             </Button>
-            <Button Name="RefreshButton" Classes="topButton"
-                    Command="{Binding RefreshCommand}">
-                <StackPanel Orientation="Horizontal">
-                    <i:Icon Value="fa-arrows-rotate" />
-                    <TextBlock VerticalAlignment="Center">Refresh</TextBlock>
-                </StackPanel>
-            </Button>
-            <Button Name="AddButton" Classes="topButton"
-                    Command="{Binding AddMessageCommand}">
-                <StackPanel Orientation="Horizontal">
-                    <i:Icon Value="fa-envelope" />
-                    <TextBlock VerticalAlignment="Center">New message</TextBlock>
-                </StackPanel>
-            </Button>
-            <Button Name="PurgeActiveMessagesButton" Classes="topButton"
-                    Command="{Binding PurgeMessagesCommand}" CommandParameter="false">
-                <StackPanel Orientation="Horizontal">
-                    <i:Icon Value="fa-trash" />
-                    <TextBlock VerticalAlignment="Center">Purge messages</TextBlock>
-                </StackPanel>
-            </Button>
-            <Button Name="PurgeDlqMessagesButton" Classes="topButton"
-                    Command="{Binding PurgeMessagesCommand}" CommandParameter="true">
-                <StackPanel Orientation="Horizontal">
-                    <i:Icon Value="fa-trash" />
-                    <TextBlock VerticalAlignment="Center">Purge dead-letter</TextBlock>
-                </StackPanel>
-            </Button>
-            <Button Name="TransferDlqMessagesButton" Classes="topButton"
-                    Command="{Binding TransferDeadLetterMessagesCommand}"
-                    CommandParameter="{Binding #DlqMessagesGrid.SelectedItems}">
-                <StackPanel Orientation="Horizontal">
-                    <i:Icon Value="fa-shuffle" />
-                    <TextBlock VerticalAlignment="Center">Transfer DLQ</TextBlock>
-                </StackPanel>
-            </Button>
-            <Button Name="ShowDlqButton" Classes="topButton"
-                    Classes.active="{Binding ShowDlqOnly}"
-                    Command="{Binding ToggleShowDlqCommand}">
-                <StackPanel Orientation="Horizontal">
-                    <i:Icon Value="fa-triangle-exclamation" />
-                    <TextBlock VerticalAlignment="Center">Show DLQ</TextBlock>
-                </StackPanel>
-            </Button>
+            <DropDownButton Classes="topButton" Content="Messages">
+                <DropDownButton.IsEnabled>
+                    <MultiBinding Converter="{x:Static BoolConverters.Or}">
+                        <Binding Path="!!CurrentSubscription" />
+                        <Binding Path="!!CurrentQueue" />
+                    </MultiBinding>
+                </DropDownButton.IsEnabled>
+                <DropDownButton.Flyout>
+                    <MenuFlyout>
+                        <MenuItem Header="New Message" Command="{Binding AddMessageCommand}">
+                            <MenuItem.Icon>
+                                <i:Icon Value="fa-envelope" />
+                            </MenuItem.Icon>
+                        </MenuItem>
+                        <MenuItem Header="Purge messages" Command="{Binding PurgeMessagesCommand}" CommandParameter="false">
+                            <MenuItem.Icon>
+                                <i:Icon Value="fa-trash" />
+                            </MenuItem.Icon>
+                        </MenuItem>
+                        <MenuItem Header="Purge dead-letter" Command="{Binding PurgeMessagesCommand}" CommandParameter="true">
+                            <MenuItem.Icon>
+                                <i:Icon Value="fa-trash" />
+                            </MenuItem.Icon>
+                        </MenuItem>
+                        <MenuItem Header="Transfer DLQ" Command="{Binding TransferDeadLetterMessagesCommand}"
+                                  CommandParameter="{Binding #DlqMessagesGrid.SelectedItems}">
+                            <MenuItem.Icon>
+                                <i:Icon Value="fa-shuffle" />
+                            </MenuItem.Icon>
+                        </MenuItem>
+                    </MenuFlyout>
+                </DropDownButton.Flyout>
+            </DropDownButton>
+            <DropDownButton Classes="topButton" Classes.active="{Binding ShowDlqOnly}" Content="Operations">
+                <DropDownButton.Flyout>
+                    <MenuFlyout>
+                        <MenuItem Header="Refresh" Command="{Binding RefreshCommand}">
+                            <MenuItem.Icon>
+                                <i:Icon Value="fa-arrows-rotate" />
+                            </MenuItem.Icon>
+                        </MenuItem>
+                        <MenuItem Header="Show DLQ" ToggleType="CheckBox"
+                                  IsChecked="{Binding ShowDlqOnly, Mode=TwoWay}" />
+                    </MenuFlyout>
+                </DropDownButton.Flyout>
+            </DropDownButton>
             <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" VerticalAlignment="Center">
                 <TextBlock Margin="0,3,10,0" TextAlignment="Right">
                     <TextBlock.Text>

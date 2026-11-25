@@ -18,7 +18,8 @@ It's a simple tool to help you:
 * Re-submit a message from dead-letter
 * Dead-letter a message **^**
 
-**\^ NOTE:** These marked actions require receiving all the messages up to the selected message and this increases DeliveryCount. Be aware that there can be consequences to other messages in the subscription.
+**\^ NOTE:** These marked actions require receiving all the messages up to the selected message and this increases DeliveryCount. 
+Be aware that there can be consequences to other messages in the subscription.
 
 ## How to run
 
