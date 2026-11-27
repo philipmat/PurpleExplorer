@@ -49,6 +49,7 @@ Since forking from the original project, the following significant updates have 
 * Improved connection management and user experience (taller connection box, alerts for existing connections, etc.).
 * Re-queues selected messages (or all if none selected)
 * Can show messages headers (application properties) and add headers to new  messages
+* Ability to create and delete topic subscriptions
 * Upgraded to .NET 10 for better performance and latest features.
 * Upgraded to latest Avalonia (v12) for improved UI framework capabilities.
 * Migrated to Azure.Messaging.ServiceBus for the latest Azure SDK.
