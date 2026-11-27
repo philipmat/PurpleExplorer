@@ -136,10 +136,19 @@
                     <TabItem Header="{Binding TopicTabHeader}">
                         <DockPanel>
                             <TextBox DockPanel.Dock="Top" Text="{Binding SearchText}" PlaceholderText="Filter tree..."
-                                     Margin="5">
+                                     Margin="5" KeyDown="TreeFilter_KeyDown" LostFocus="TreeFilter_LostFocus">
                                 <TextBox.InnerRightContent>
-                                    <CheckBox IsChecked="{Binding IsRegex}" Content="Regex" VerticalAlignment="Center"
-                                              Margin="0,0,5,0" BorderThickness="0" Background="Transparent" />
+                                    <StackPanel Orientation="Horizontal">
+                                        <CheckBox IsChecked="{Binding IsRegex}" Content="Regex" VerticalAlignment="Center"
+                                                  Margin="0,0,5,0" BorderThickness="0" Background="Transparent" />
+                                        <DropDownButton x:Name="TopicFilterHistoryButton" AutomationProperties.Name="Recent tree filters"
+                                                        ToolTip.Tip="Recent tree filters" Padding="6,0"
+                                                        Background="Transparent" BorderThickness="0">
+                                            <DropDownButton.Flyout>
+                                                <MenuFlyout />
+                                            </DropDownButton.Flyout>
+                                        </DropDownButton>
+                                    </StackPanel>
                                 </TextBox.InnerRightContent>
                             </TextBox>
                             <TreeView SelectionChanged="TreeView_SelectionChanged"
@@ -186,10 +195,19 @@
                     <TabItem Header="{Binding QueueTabHeader}">
                         <DockPanel>
                             <TextBox DockPanel.Dock="Top" Text="{Binding SearchText}" PlaceholderText="Filter tree..."
-                                     Margin="5">
+                                     Margin="5" KeyDown="TreeFilter_KeyDown" LostFocus="TreeFilter_LostFocus">
                                 <TextBox.InnerRightContent>
-                                    <CheckBox IsChecked="{Binding IsRegex}" Content="Regex" VerticalAlignment="Center"
-                                              Margin="0,0,5,0" BorderThickness="0" Background="Transparent" />
+                                    <StackPanel Orientation="Horizontal">
+                                        <CheckBox IsChecked="{Binding IsRegex}" Content="Regex" VerticalAlignment="Center"
+                                                  Margin="0,0,5,0" BorderThickness="0" Background="Transparent" />
+                                        <DropDownButton x:Name="QueueFilterHistoryButton" AutomationProperties.Name="Recent tree filters"
+                                                        ToolTip.Tip="Recent tree filters" Padding="6,0"
+                                                        Background="Transparent" BorderThickness="0">
+                                            <DropDownButton.Flyout>
+                                                <MenuFlyout />
+                                            </DropDownButton.Flyout>
+                                        </DropDownButton>
+                                    </StackPanel>
                                 </TextBox.InnerRightContent>
                             </TextBox>
                             <TreeView SelectionChanged="TreeView_SelectionChanged"

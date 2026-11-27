@@ -50,6 +50,7 @@ public class MainWindowViewModel : ViewModelBase
         _topicHelper = Locator.Current.GetService<ITopicHelper>()!;
         _queueHelper = Locator.Current.GetService<IQueueHelper>()!;
         _appState = Locator.Current.GetService<IAppState>()!;
+        TrimTreeFilterHistory();
 
         Messages = [];
         DlqMessages = [];
@@ -134,6 +135,8 @@ public class MainWindowViewModel : ViewModelBase
             FilterTree();
         }
     }
+
+    public IReadOnlyList<string> TreeFilterHistory => _appState.TreeFilterHistory;
 
     public bool IsRegex
     {
@@ -956,8 +959,25 @@ public class MainWindowViewModel : ViewModelBase
     public void SetSelectedServiceBus(ServiceBusResource serviceBus) =>
         SelectedServiceBusConnection = serviceBus.ConnectionString;
 
+    public void RememberTreeFilter()
+    {
+        if (string.IsNullOrWhiteSpace(SearchText) || _appState.AppSettings.TreeFilterHistoryLimit <= 0) return;
+
+        var history = _appState.TreeFilterHistory;
+        if (history.Count > 0 && history[0] == SearchText) return;
+
+        history.Remove(SearchText);
+        history.Insert(0, SearchText);
+        TrimTreeFilterHistory();
+        this.RaisePropertyChanged(nameof(TreeFilterHistory));
+    }
+
     public async Task ShowSettings()
-        => await ModalWindowHelper.ShowModalWindow<AppSettingsWindow>((AppState)_appState);
+    {
+        await ModalWindowHelper.ShowModalWindow<AppSettingsWindow>((AppState)_appState);
+        TrimTreeFilterHistory();
+        this.RaisePropertyChanged(nameof(TreeFilterHistory));
+    }
 
     public void ClearAllSelections()
     {
@@ -969,5 +989,14 @@ public class MainWindowViewModel : ViewModelBase
         Messages.Clear();
         DlqMessages.Clear();
         RefreshTabHeaders();
+    }
+
+    private void TrimTreeFilterHistory()
+    {
+        var history = _appState.TreeFilterHistory;
+        var limit = Math.Max(0, _appState.AppSettings.TreeFilterHistoryLimit);
+
+        if (history.Count > limit)
+            history.RemoveRange(limit, history.Count - limit);
     }
 }

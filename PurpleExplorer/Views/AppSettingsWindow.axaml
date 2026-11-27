@@ -5,7 +5,7 @@
         xmlns:models="clr-namespace:PurpleExplorer.Models"
         mc:Ignorable="d" d:DesignWidth="620" d:DesignHeight="450"
         x:Class="PurpleExplorer.Views.AppSettingsWindow"
-        Width="520" Height="330"
+        Width="520" Height="370"
         Title="AppSettingsWindow"
         WindowStartupLocation="CenterOwner">
 
@@ -28,7 +28,7 @@
         </Style>
     </Window.Styles>
 
-    <Grid ColumnDefinitions="*,Auto" RowDefinitions="Auto,Auto,Auto,Auto,Auto,Auto" Margin="4" VerticalAlignment="Top">
+    <Grid ColumnDefinitions="*,Auto" RowDefinitions="Auto,Auto,Auto,Auto,Auto,Auto,Auto" Margin="4" VerticalAlignment="Top">
         <TextBlock Text="How many queues to fetch from namespace" Grid.Row="0" Grid.Column="0" Classes="left" />
         <NumericUpDown Grid.Row="0" Grid.Column="1" Value="{Binding AppSettings.QueueListFetchCount}" Classes="right" />
 
@@ -50,5 +50,9 @@
         <TextBlock Text="New subscription suffix" Grid.Row="5" Grid.Column="0" Classes="left" />
         <TextBox Grid.Row="5" Grid.Column="1" Width="160" Margin="0,4"
                  Text="{Binding AppSettings.NewSubscriptionSuffix, Mode=TwoWay}" />
+
+        <TextBlock Grid.Row="6" Grid.Column="0" Classes="left" Text="Recent tree filters to keep (0 to disable)" />
+        <NumericUpDown Grid.Row="6" Grid.Column="1" Classes="right" Minimum="0" Maximum="2147483647"
+                       FormatString="0" Value="{Binding AppSettings.TreeFilterHistoryLimit}" />
     </Grid>
 </Window>

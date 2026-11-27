@@ -10,4 +10,5 @@ public class AppSettings
     public double TopicListWidth { get; set; } = 400;
     public string NewSubscriptionPrefix { get; set; } = "test-";
     public string NewSubscriptionSuffix { get; set; } = string.Empty;
+    public int TreeFilterHistoryLimit { get; set; } = 10;
 }
