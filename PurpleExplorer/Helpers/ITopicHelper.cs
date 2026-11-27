@@ -11,7 +11,22 @@ public interface ITopicHelper
     public Task<NamespaceProperties> GetNamespaceInfo(ServiceBusConnectionString connectionString);
     public Task<IList<ServiceBusTopic>> GetTopicsAndSubscriptions(ServiceBusConnectionString connectionString);
 
+    public Task<ServiceBusTopic> GetTopic(
+        ServiceBusConnectionString connectionString,
+        string topicPath,
+        bool retrieveSubscriptions);
+
     public Task<ServiceBusSubscription> GetSubscription(
+        ServiceBusConnectionString connectionString,
+        string topicPath,
+        string subscriptionName);
+
+    public Task CreateSubscription(
+        ServiceBusConnectionString connectionString,
+        string topicPath,
+        string subscriptionName);
+
+    public Task DeleteSubscription(
         ServiceBusConnectionString connectionString,
         string topicPath,
         string subscriptionName);

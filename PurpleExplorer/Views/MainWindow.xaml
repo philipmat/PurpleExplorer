@@ -75,6 +75,23 @@
                     </MenuFlyout>
                 </DropDownButton.Flyout>
             </DropDownButton>
+            <DropDownButton Classes="topButton" Content="Topic Actions"
+                            IsEnabled="{Binding SelectedTopic, Converter={x:Static ObjectConverters.IsNotNull}, FallbackValue=False}">
+                <DropDownButton.Flyout>
+                    <MenuFlyout>
+                        <MenuItem Header="Create new subscription" Command="{Binding CreateSubscriptionCommand}">
+                            <MenuItem.Icon>
+                                <i:Icon Value="fa-plus" />
+                            </MenuItem.Icon>
+                        </MenuItem>
+                        <MenuItem Header="Delete subscription" Command="{Binding DeleteSubscriptionCommand}">
+                            <MenuItem.Icon>
+                                <i:Icon Value="fa-trash" />
+                            </MenuItem.Icon>
+                        </MenuItem>
+                    </MenuFlyout>
+                </DropDownButton.Flyout>
+            </DropDownButton>
             <DropDownButton Classes="topButton" Classes.active="{Binding ShowDlqOnly}" Content="Operations">
                 <DropDownButton.Flyout>
                     <MenuFlyout>

@@ -32,6 +32,24 @@ public class TopicHelper(AppSettings appSettings) : BaseHelper, ITopicHelper
         return new ServiceBusSubscription(runtimeInfo.Value);
     }
 
+    public async Task CreateSubscription(
+        ServiceBusConnectionString connectionString,
+        string topicPath,
+        string subscriptionName)
+    {
+        ServiceBusAdministrationClient client = GetManagementClient(connectionString);
+        await client.CreateSubscriptionAsync(topicPath, subscriptionName);
+    }
+
+    public async Task DeleteSubscription(
+        ServiceBusConnectionString connectionString,
+        string topicPath,
+        string subscriptionName)
+    {
+        ServiceBusAdministrationClient client = GetManagementClient(connectionString);
+        await client.DeleteSubscriptionAsync(topicPath, subscriptionName);
+    }
+
     public async Task<IList<Message>> GetMessagesBySubscription(
         ServiceBusConnectionString connectionString,
         string topicName,
