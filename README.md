@@ -18,7 +18,8 @@ It's a simple tool to help you:
 * Re-submit a message from dead-letter
 * Dead-letter a message **^**
 
-**\^ NOTE:** These marked actions require receiving all the messages up to the selected message and this increases DeliveryCount. Be aware that there can be consequences to other messages in the subscription.
+**\^ NOTE:** These marked actions require receiving all the messages up to the selected message and this increases DeliveryCount. 
+Be aware that there can be consequences to other messages in the subscription.
 
 ## How to run
 
@@ -48,6 +49,7 @@ Since forking from the original project, the following significant updates have 
 * Improved connection management and user experience (taller connection box, alerts for existing connections, etc.).
 * Re-queues selected messages (or all if none selected)
 * Can show messages headers (application properties) and add headers to new  messages
+* Ability to create and delete topic subscriptions
 * Upgraded to .NET 10 for better performance and latest features.
 * Upgraded to latest Avalonia (v12) for improved UI framework capabilities.
 * Migrated to Azure.Messaging.ServiceBus for the latest Azure SDK.

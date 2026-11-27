@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Runtime.Serialization;
 using PurpleExplorer.ViewModels;
@@ -15,4 +16,7 @@ public class AppState : ViewModelBase, IAppState
 
     [DataMember]
     public AppSettings AppSettings { get; set; } = new();
+
+    [DataMember]
+    public List<string> TreeFilterHistory { get; set; } = [];
 }
